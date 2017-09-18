@@ -1,0 +1,8 @@
+﻿nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+.sonar
+nbproject/private/private.xml
