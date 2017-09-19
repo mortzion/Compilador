@@ -18,6 +18,7 @@ public class AnalisadorLexico {
 
   /** lexical states */
   public static final int YYINITIAL = 0;
+  public static final int ESTADO_NUM_REAL_PARCIAL = 2;
 
   /**
    * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l
@@ -26,16 +27,16 @@ public class AnalisadorLexico {
    * l is of the form l = 2*k, k a non negative integer
    */
   private static final int ZZ_LEXSTATE[] = { 
-     0, 0
+     0,  0,  1, 1
   };
 
   /** 
    * Translates characters to character classes
    */
   private static final String ZZ_CMAP_PACKED = 
-    "\11\0\1\1\1\1\1\12\1\12\1\12\22\0\1\1\7\0\1\6"+
+    "\11\0\1\1\1\12\1\13\1\13\1\13\22\0\1\1\7\0\1\6"+
     "\1\7\1\4\1\3\1\0\1\2\1\11\1\5\12\10\102\0\1\1"+
-    "\10\0\1\12\u1fa2\0\1\12\1\12\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\udfe6\0";
+    "\10\0\1\13\u1fa2\0\1\13\1\13\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\udfe6\0";
 
   /** 
    * Translates characters to character classes
@@ -48,11 +49,11 @@ public class AnalisadorLexico {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\1\0\1\1\1\2\1\3\1\4\1\5\1\6\1\7"+
-    "\1\10\1\11\1\0\1\12";
+    "\2\0\1\1\1\2\1\3\1\4\1\5\1\6\1\7"+
+    "\1\10\1\11\1\12\1\13\1\14";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[12];
+    int [] result = new int[14];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -77,11 +78,11 @@ public class AnalisadorLexico {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\13\0\13\0\13\0\13\0\13\0\13\0\13"+
-    "\0\13\0\26\0\41\0\41";
+    "\0\0\0\14\0\30\0\30\0\30\0\30\0\30\0\30"+
+    "\0\30\0\30\0\44\0\30\0\60\0\30";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[12];
+    int [] result = new int[14];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -104,11 +105,12 @@ public class AnalisadorLexico {
   private static final int [] ZZ_TRANS = zzUnpackTrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11"+
-    "\1\12\1\2\24\0\1\12\1\13\11\0\1\14\2\0";
+    "\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\12"+
+    "\1\13\1\3\1\4\1\0\10\14\1\15\1\14\1\4"+
+    "\25\0\1\13\1\16\12\0\1\15\1\16\2\0";
 
   private static int [] zzUnpackTrans() {
-    int [] result = new int[44];
+    int [] result = new int[60];
     int offset = 0;
     offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -146,10 +148,10 @@ public class AnalisadorLexico {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\10\11\1\1\1\0\1\1";
+    "\2\0\10\11\1\1\1\11\1\1\1\11";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[12];
+    int [] result = new int[14];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -226,8 +228,15 @@ public class AnalisadorLexico {
 
   /* user code: */
 
+String string; 
+int colunaInicial;
+
 private Token criarToken(String lexema, int tipo) {
    return new Token(lexema,tipo,yyline,yycolumn);
+}
+
+private Token criarToken(String lexema, int tipo, int coluna,int soma){
+    return new Token(lexema,tipo,yyline,coluna,soma);
 }
 
 
@@ -605,43 +614,51 @@ private Token criarToken(String lexema, int tipo) {
           case 1: 
             { return criarToken(yytext(),-1);
             }
-          case 11: break;
+          case 13: break;
           case 2: 
             { /****/
             }
-          case 12: break;
+          case 14: break;
           case 3: 
             { return criarToken("-",0);
             }
-          case 13: break;
+          case 15: break;
           case 4: 
             { return criarToken("+",1);
             }
-          case 14: break;
+          case 16: break;
           case 5: 
             { return criarToken("*",2);
             }
-          case 15: break;
+          case 17: break;
           case 6: 
             { return criarToken("/",3);
             }
-          case 16: break;
+          case 18: break;
           case 7: 
             { return criarToken("(",4);
             }
-          case 17: break;
+          case 19: break;
           case 8: 
             { return criarToken(")",5);
             }
-          case 18: break;
+          case 20: break;
           case 9: 
             { return criarToken(yytext(),6);
             }
-          case 19: break;
+          case 21: break;
           case 10: 
-            { return criarToken(yytext(),7);
+            { yybegin(YYINITIAL);return criarToken(string+yytext(),-2,colunaInicial,-1);
             }
-          case 20: break;
+          case 22: break;
+          case 11: 
+            { yybegin(YYINITIAL);return criarToken(string+yytext(),7,colunaInicial,0);
+            }
+          case 23: break;
+          case 12: 
+            { string = yytext();colunaInicial = yycolumn;yybegin(ESTADO_NUM_REAL_PARCIAL);
+            }
+          case 24: break;
           default:
             zzScanError(ZZ_NO_MATCH);
         }

@@ -4,8 +4,15 @@ import java_cup.runtime.*;
 
 %{
 
+String string; 
+int colunaInicial;
+
 private Token criarToken(String lexema, int tipo) {
    return new Token(lexema,tipo,yyline,yycolumn);
+}
+
+private Token criarToken(String lexema, int tipo, int coluna,int soma){
+    return new Token(lexema,tipo,yyline,coluna,soma);
 }
 
 %}
@@ -23,10 +30,19 @@ OP_MULT = "*"                   //tipo = 2
 OP_DIV = "/"                    //tipo = 3
 ABRE_P = "("                    //tipo = 4
 FECHA_P = ")"                   //tipo = 5
-INTEIRO = [0-9][0-9]*           //tipo = 6
-REAL = [0-9][0-9]*\.[0-9][0-9]* //tipo = 7
+NUM_INTEIRO = [0-9][0-9]*       //tipo = 6
+NUM_REAL_PARCIAL = [0-9][0-9]*\.//tipo = 7
+
+%state ESTADO_NUM_REAL_PARCIAL
 
 %%
+
+{NUM_REAL_PARCIAL} {string = yytext();colunaInicial = yycolumn;yybegin(ESTADO_NUM_REAL_PARCIAL);}
+<ESTADO_NUM_REAL_PARCIAL>{
+    [0-9][0-9]*     {yybegin(YYINITIAL);return criarToken(string+yytext(),7,colunaInicial,0);}
+    .               {yybegin(YYINITIAL);return criarToken(string+yytext(),-2,colunaInicial,-1);} 
+}
+
 {DELIMITADOR} {/****/}
 {OP_SUB}    {return criarToken("-",0);}
 {OP_SOMA}   {return criarToken("+",1);}
@@ -34,7 +50,6 @@ REAL = [0-9][0-9]*\.[0-9][0-9]* //tipo = 7
 {OP_DIV}   {return criarToken("/",3);}
 {ABRE_P}   {return criarToken("(",4);}
 {FECHA_P}   {return criarToken(")",5);}
-{INTEIRO}   {return criarToken(yytext(),6);}
-{REAL}   {return criarToken(yytext(),7);}
+{NUM_INTEIRO}   {return criarToken(yytext(),6);}
 
 . { return criarToken(yytext(),-1);}

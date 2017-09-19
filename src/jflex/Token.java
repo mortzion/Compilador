@@ -6,11 +6,25 @@
 
 package jflex;
 
+import java.io.IOException;
+import java.io.StringReader;
+
 /**
  *
  * @author Matheus Prachedes Batista
  */
 public class Token {
+    public static final int NUM_REAL_MALFORMADO = -2;
+    public static final int INVALIDO = -1;
+    public static final int OP_SUB = 0;
+    public static final int OP_SOMA = 1;
+    public static final int OP_MULT = 2;
+    public static final int OP_DIV = 3;
+    public static final int ABRE_P = 4;
+    public static final int FECHA_P = 5;
+    public static final int NUM_INTEIRO = 6;
+    public static final int NUM_REAL = 7;
+   
     private String lexema;
     private int tipo;
     private int linha;
@@ -25,6 +39,16 @@ public class Token {
         this.colunaInicio = colunaInicio;
         this.colunaFinal = colunaInicio + lexema.length()-1;
     }
+
+    public Token(String lexema, int tipo, int linha, int colunaInicio, int somaColunaFinal) {
+        this.lexema = lexema;
+        this.tipo = tipo;
+        this.linha = linha;
+        this.colunaInicio = colunaInicio;
+        this.colunaFinal = colunaInicio + lexema.length()-1+somaColunaFinal;
+    }
+    
+    
     
     public String getLexema() {
         return lexema;
@@ -68,6 +92,14 @@ public class Token {
     
     public String toString(){
         return lexema + " -> " + tipo + " " + colunaInicio + " " + colunaFinal + " " + linha; 
+    }
+    
+    public static void main(String[] args) throws IOException{
+        String exp = "3 .4+";
+        AnalisadorLexico lex = new AnalisadorLexico(new StringReader(exp));
+        System.out.println(lex.yylex());
+        System.out.println(lex.yylex());
+        System.out.println(lex.yylex());
     }
     
 }
