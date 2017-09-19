@@ -95,7 +95,7 @@ public class Token {
     }
     
     public static void main(String[] args) throws IOException{
-        String exp = "3 .4+";
+        String exp = "3. 4+";
         AnalisadorLexico lex = new AnalisadorLexico(new StringReader(exp));
         System.out.println(lex.yylex());
         System.out.println(lex.yylex());
