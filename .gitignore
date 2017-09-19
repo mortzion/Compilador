@@ -6,3 +6,4 @@ nbdist/
 .nb-gradle/
 .sonar
 nbproject/private/private.xml
+/nbproject/private/
