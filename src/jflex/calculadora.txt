@@ -4,15 +4,8 @@ import java_cup.runtime.*;
 
 %{
 
-String string; 
-int colunaInicial;
-
 private Token criarToken(String lexema, int tipo) {
    return new Token(lexema,tipo,yyline,yycolumn);
-}
-
-private Token criarToken(String lexema, int tipo, int coluna,int soma){
-    return new Token(lexema,tipo,yyline,coluna,soma);
 }
 
 %}
@@ -24,24 +17,17 @@ private Token criarToken(String lexema, int tipo, int coluna,int soma){
 %column
 
 DELIMITADOR = [\n| |\t]
-OP_SUB = "-"                    //tipo = 0
-OP_SOMA = "+"                   //tipo = 1
-OP_MULT = "*"                   //tipo = 2
-OP_DIV = "/"                    //tipo = 3
-ABRE_P = "("                    //tipo = 4
-FECHA_P = ")"                   //tipo = 5
-NUM_INTEIRO = [0-9][0-9]*       //tipo = 6
-NUM_REAL_PARCIAL = [0-9][0-9]*\.//tipo = 7
-
-%state ESTADO_NUM_REAL_PARCIAL
-
+OP_SUB = "-"                    	//tipo = 0
+OP_SOMA = "+"                   	//tipo = 1
+OP_MULT = "*"                   	//tipo = 2
+OP_DIV = "/"                    	//tipo = 3
+ABRE_P = "("                    	//tipo = 4
+FECHA_P = ")"                   	//tipo = 5
+NUM_INTEIRO = [0-9][0-9]*       	//tipo = 6
+NUM_REAL = [0-9][0-9]*\.[0-9][0-9]*	//tipo = 7
+NUM_REAL_MALFORMADO = ([0-9][0-9]*\.)|(\.[0-9][0-9]*)	//tipo -2
 %%
 
-{NUM_REAL_PARCIAL} {string = yytext();colunaInicial = yycolumn;yybegin(ESTADO_NUM_REAL_PARCIAL);}
-<ESTADO_NUM_REAL_PARCIAL>{
-    [0-9][0-9]*     {yybegin(YYINITIAL);return criarToken(string+yytext(),7,colunaInicial,0);}
-    .               {yybegin(YYINITIAL);return criarToken(string+yytext(),-2,colunaInicial,-1);} 
-}
 
 {DELIMITADOR} {/****/}
 {OP_SUB}    {return criarToken("-",0);}
@@ -51,5 +37,6 @@ NUM_REAL_PARCIAL = [0-9][0-9]*\.//tipo = 7
 {ABRE_P}   {return criarToken("(",4);}
 {FECHA_P}   {return criarToken(")",5);}
 {NUM_INTEIRO}   {return criarToken(yytext(),6);}
-
+{NUM_REAL}	{return criarToken(yytext(),7);}
+{NUM_REAL_MALFORMADO}	{return criarToken(yytext(),-2);}
 . { return criarToken(yytext(),-1);}
