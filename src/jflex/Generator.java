@@ -20,7 +20,7 @@ public class Generator {
         String rootPath = Paths.get("").toAbsolutePath(). toString();
         String subPath = "/src/jflex/";
 
-        String file = rootPath + subPath + "calculadora.txt";
+        String file = rootPath + subPath + "jflexlalg.txt";
 
         File sourceCode = new File(file);
 

@@ -7,11 +7,16 @@ package GUI;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringReader;
 import static java.lang.System.exit;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import jflex.AnalisadorLexico;
+import jflex.AnalisadorLexicoLALG;
+import jflex.Token;
 
 /**
  *
@@ -65,6 +70,11 @@ public class Main extends javax.swing.JFrame {
         jMenu2.setText("Analisador");
 
         jMenuItem1.setText("Léxico");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
         jMenu2.add(jMenuItem1);
 
         jMenuBar1.add(jMenu2);
@@ -113,6 +123,21 @@ public class Main extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        String fonte = fonteBox.getText();
+        AnalisadorLexicoLALG lexico = new AnalisadorLexicoLALG(new StringReader(fonte));
+        while(true){
+            Token t=null;
+            try {
+                t = lexico.yylex();
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            if(t == null)break;
+            System.out.println(t);
+        }
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     /**
      * @param args the command line arguments
