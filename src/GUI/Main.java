@@ -10,12 +10,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import static java.lang.System.exit;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import jflex.AnalisadorLexico;
 import jflex.AnalisadorLexicoLALG;
+import javax.swing.table.DefaultTableModel;
 import jflex.Token;
 
 /**
@@ -42,6 +44,10 @@ public class Main extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         fonteBox = new javax.swing.JTextArea();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tokenTable = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -54,6 +60,28 @@ public class Main extends javax.swing.JFrame {
         fonteBox.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         fonteBox.setRows(5);
         jScrollPane1.setViewportView(fonteBox);
+
+        tokenTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Lexema", "Tipo", "Linha", "Coluna Inicial", "Coluna Final"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(tokenTable);
+
+        jLabel1.setText("Tokens:");
+
+        jLabel2.setText("Fonte:");
 
         jMenu1.setText("File");
 
@@ -87,14 +115,27 @@ public class Main extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 854, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                .addGap(10, 10, 10)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -111,7 +152,7 @@ public class Main extends javax.swing.JFrame {
             try {
                 Scanner s = new Scanner(f);
                 String line = "";
-                while(s.hasNextLine()){
+                while(s.hasNext()){
                     line += s.nextLine()+"\n";
                     System.out.println("entrei");
                 }
@@ -125,18 +166,7 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        String fonte = fonteBox.getText();
-        AnalisadorLexicoLALG lexico = new AnalisadorLexicoLALG(new StringReader(fonte));
-        while(true){
-            Token t=null;
-            try {
-                t = lexico.yylex();
-            } catch (IOException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if(t == null)break;
-            System.out.println(t);
-        }
+        this.fillTokenTable(this.getAllTokens());
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     /**
@@ -173,14 +203,51 @@ public class Main extends javax.swing.JFrame {
             }
         });
     }
-
+    
+    public void fillTokenTable(ArrayList<Token> tokens){
+        DefaultTableModel dtm = (DefaultTableModel) tokenTable.getModel();
+        dtm.getDataVector().removeAllElements();
+        dtm.fireTableDataChanged();
+        
+        String []linha = new String[5];
+        for(Token t : tokens){
+            linha[0] = t.getLexema();
+            linha[1] = t.getTokenName();
+            linha[2] = String.valueOf(t.getLinha());
+            linha[3] = String.valueOf(t.getColunaInicio());
+            linha[4] = String.valueOf(t.getColunaFinal());
+            dtm.addRow(linha);
+        }
+    }
+    
+    public ArrayList<Token> getAllTokens(){
+        ArrayList<Token> tokens = new ArrayList<Token>();
+        
+        AnalisadorLexico a = new AnalisadorLexico(new StringReader(fonteBox.getText()));
+        Token atual;
+        
+        try {
+                while(true){
+                atual = a.yylex();
+                if(atual == null) break;
+                else tokens.add(atual);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return tokens;
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea fonteBox;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable tokenTable;
     // End of variables declaration//GEN-END:variables
 }
