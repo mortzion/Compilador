@@ -31,6 +31,21 @@ public class Token {
     private int colunaInicio;
     private int colunaFinal;
 
+    public String getTokenName(){
+        switch(this.tipo){
+            case -2: return "NUM_REAL_MALFORMADO";
+            case -1: return "INVALIDO";
+            case 0: return "OP_SUB";
+            case 1: return "OP_SOMA";
+            case 2: return "OP_MULT";
+            case 3: return "OP_DIV";
+            case 4: return "ABRE_P";
+            case 5: return "FECHA_P";
+            case 6: return "NUM_INTEIRO";
+            case 7: return "NUM_REAL";
+        }
+        return "Não Encontrado!";
+    }
     
     public Token(String lexema, int tipo, int linha, int colunaInicio) {
         this.lexema = lexema;
@@ -92,14 +107,6 @@ public class Token {
     
     public String toString(){
         return lexema + " -> " + tipo + " " + colunaInicio + " " + colunaFinal + " " + linha; 
-    }
-    
-    public static void main(String[] args) throws IOException{
-        String exp = "3. 4+";
-        AnalisadorLexico lex = new AnalisadorLexico(new StringReader(exp));
-        System.out.println(lex.yylex());
-        System.out.println(lex.yylex());
-        System.out.println(lex.yylex());
     }
     
 }
