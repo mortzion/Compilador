@@ -15,7 +15,6 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import jflex.AnalisadorLexico;
 import jflex.AnalisadorLexicoLALG;
 import javax.swing.table.DefaultTableModel;
 import jflex.Token;
@@ -223,7 +222,7 @@ public class Main extends javax.swing.JFrame {
     public ArrayList<Token> getAllTokens(){
         ArrayList<Token> tokens = new ArrayList<Token>();
         
-        AnalisadorLexico a = new AnalisadorLexico(new StringReader(fonteBox.getText()));
+        AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
         Token atual;
         
         try {

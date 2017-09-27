@@ -36,6 +36,7 @@ RSRVDA_TRUE = "true"                    //tipo = 12
 RSRVDA_FALSE = "false"                  //tipo = 13
 RSRVDA_INTEGER = "int"                  //tipo = 14
 RSRVDA_BOOLEAN = "boolean"              //tipo = 16
+
 //================================
 
 PTO_VIRGULA = ";"                       //tipo = 17
@@ -61,6 +62,8 @@ NUM_REAL = [0-9]+\.[0-9]+               //tipo = 36
 IDENTIFICADOR = [_|a-z|A-Z][_|a-z|A-Z|0-9]*  //tipo = 37
 PONTO = "."                             //tipo=38    
 
+NUM_REAL_MALFORMADO = [0-9][0-9]*\.|\.[0-9][0-9]* //tipo=-2
+
 %state COMENTARIO_UNICO
 %state COMENTARIO_BLOCO
 
@@ -71,14 +74,16 @@ PONTO = "."                             //tipo=38
     .   {/****/}
 }
 
-<COMENTARIO_BLOCO>{
-    "}" {yybegin(YYINITIAL);}
-    \n|.  {/****/}    
-}
+<COMENTARIO_BLOCO> <<EOF>> {yybegin(YYINITIAL);return criarToken(yytext(),-3);}
+<COMENTARIO_BLOCO> "}" {yybegin(YYINITIAL);}   
+<COMENTARIO_BLOCO> [^]  {/****/}
+
+
+
 <YYINITIAL>{
     "//"    {yybegin(COMENTARIO_UNICO);}
     "{"     {yybegin(COMENTARIO_BLOCO);}
-    
+    "}"     {return criarToken(yytext(),-4);}
     {DELIMITADOR}   {/****/}
     
     {RSRVDA_PROGRAM}    {return criarToken(yytext(),0);}
@@ -120,5 +125,6 @@ PONTO = "."                             //tipo=38
     {NUM_REAL}    {return criarToken(yytext(),36);}
     {IDENTIFICADOR} {return criarToken(yytext(),37);}
     {PONTO} {return criarToken(yytext(),38);}
+    {NUM_REAL_MALFORMADO}   {return criarToken(yytext(),-2);}
     .   {return criarToken(yytext(),-1);}
 }
