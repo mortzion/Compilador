@@ -5,9 +5,11 @@ import java_cup.runtime.*;
 %{
 
 private Token criarToken(String lexema, int tipo) {
-   return new Token(lexema,tipo,yyline,yycolumn);
+   return new Token(lexema,tipo,yyline,yycolumn,yychar);
 }
-
+public int getCurrentStart(){
+    return zzStartRead;
+}
 %}
 
 %public
@@ -15,8 +17,8 @@ private Token criarToken(String lexema, int tipo) {
 %type Token
 %line
 %column
-
-DELIMITADOR = [\n| |\t]
+%char
+DELIMITADOR = [\n| |\t|\r|\r\n]
 
 //Palavras Reservadas
 
@@ -76,7 +78,7 @@ NUM_REAL_MALFORMADO = [0-9][0-9]*\.|\.[0-9][0-9]* //tipo=-2
 
 <COMENTARIO_BLOCO> <<EOF>> {yybegin(YYINITIAL);return criarToken(yytext(),-3);}
 <COMENTARIO_BLOCO> "}" {yybegin(YYINITIAL);}   
-<COMENTARIO_BLOCO> [^]  {/****/}
+<COMENTARIO_BLOCO> .  {/****/}
 
 
 
@@ -128,3 +130,4 @@ NUM_REAL_MALFORMADO = [0-9][0-9]*\.|\.[0-9][0-9]* //tipo=-2
     {NUM_REAL_MALFORMADO}   {return criarToken(yytext(),-2);}
     .   {return criarToken(yytext(),-1);}
 }
+. {return criarToken(yytext(),-1);}

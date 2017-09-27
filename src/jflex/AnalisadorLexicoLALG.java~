@@ -315,9 +315,11 @@ public class AnalisadorLexicoLALG {
   /* user code: */
 
 private Token criarToken(String lexema, int tipo) {
-   return new Token(lexema,tipo,yyline,yycolumn);
+   return new Token(lexema,tipo,yyline,yycolumn,yychar);
 }
-
+public int getCurrentStart(){
+    return zzStartRead;
+}
 
 
   /**
@@ -568,6 +570,8 @@ private Token criarToken(String lexema, int tipo) {
     while (true) {
       zzMarkedPosL = zzMarkedPos;
 
+      yychar+= zzMarkedPosL-zzStartRead;
+
       boolean zzR = false;
       int zzCh;
       int zzCharCount;
@@ -688,7 +692,7 @@ private Token criarToken(String lexema, int tipo) {
         zzAtEOF = true;
             switch (zzLexicalState) {
             case COMENTARIO_BLOCO: {
-              return criarToken(yytext(),-3);
+              yybegin(YYINITIAL);return criarToken(yytext(),-3);
             }
             case 106: break;
             default:

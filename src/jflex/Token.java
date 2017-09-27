@@ -63,6 +63,7 @@ public class Token {
     private int linha;
     private int colunaInicio;
     private int colunaFinal;
+    private int offset;
 
     public String getTokenName(){
         switch(this.tipo){
@@ -112,12 +113,13 @@ public class Token {
         return "Não Encontrado!";
     }
     
-    public Token(String lexema, int tipo, int linha, int colunaInicio) {
+    public Token(String lexema, int tipo, int linha, int colunaInicio, int offset) {
         this.lexema = lexema;
         this.tipo = tipo;
         this.linha = linha;
         this.colunaInicio = colunaInicio;
         this.colunaFinal = colunaInicio + lexema.length()-1;
+        this.offset = offset;
     }   
     
     public String getLexema() {
@@ -160,8 +162,13 @@ public class Token {
         this.colunaFinal = colunaFinal;
     }
     
+    public int getOffset(){
+        return offset;
+    }
+    
+    @Override
     public String toString(){
-        return lexema + " -> " + tipo + " " + colunaInicio + " " + colunaFinal + " " + linha; 
+        return lexema + " -> " + tipo + " " + colunaInicio + " " + colunaFinal + " " + linha + " " + offset; 
     }
     
 }
