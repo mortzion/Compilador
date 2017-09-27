@@ -4,11 +4,13 @@ import java_cup.runtime.*;
 
 %{
 
+boolean tokensComentarios = false;
+
 private Token criarToken(String lexema, int tipo) {
    return new Token(lexema,tipo,yyline,yycolumn,yychar);
 }
-public int getCurrentStart(){
-    return zzStartRead;
+public void tokensComentarios(boolean tokensComentarios){
+    this.tokensComentarios = tokensComentarios;
 }
 %}
 
@@ -64,6 +66,9 @@ NUM_REAL = [0-9]+\.[0-9]+               //tipo = 36
 IDENTIFICADOR = [_|a-z|A-Z][_|a-z|A-Z|0-9]*  //tipo = 37
 PONTO = "."                             //tipo=38    
 
+T1 = "//"[^\n]*\n?
+T2 = "{"[^}]*"}"?
+
 NUM_REAL_MALFORMADO = [0-9][0-9]*\.|\.[0-9][0-9]* //tipo=-2
 
 %state COMENTARIO_UNICO
@@ -71,18 +76,9 @@ NUM_REAL_MALFORMADO = [0-9][0-9]*\.|\.[0-9][0-9]* //tipo=-2
 
 %%
 
-<COMENTARIO_UNICO>{
-    \n  {yybegin(YYINITIAL);}
-    .   {/****/}
-}
-
-<COMENTARIO_BLOCO> <<EOF>> {yybegin(YYINITIAL);return criarToken(yytext(),-3);}
-<COMENTARIO_BLOCO> "}" {yybegin(YYINITIAL);}   
-<COMENTARIO_BLOCO> .  {/****/}
-
-
-
 <YYINITIAL>{
+    {T1} {if(tokensComentarios)return criarToken(yytext(),-4);}
+    {T2} {if(tokensComentarios)return criarToken(yytext(),-4);}
     "//"    {yybegin(COMENTARIO_UNICO);}
     "{"     {yybegin(COMENTARIO_BLOCO);}
     "}"     {return criarToken(yytext(),-4);}

@@ -290,6 +290,7 @@ public class Main extends javax.swing.JFrame {
         private final AttributeSet greenAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(0,153,0));
         private final AttributeSet redAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.RED);
         private final AttributeSet pinkAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(255,0,255));
+        private final AttributeSet grayAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.gray);
         
         
         @Override
@@ -331,6 +332,7 @@ public class Main extends javax.swing.JFrame {
             // Clear existing styles
             styledDocument.setCharacterAttributes(0, fonteBox.getText().length(), blackAttributeSet, true);
             AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
+            a.tokensComentarios(true);
             Token t = null;
             try {
                 while ((t = a.yylex())!=null) {
@@ -342,6 +344,8 @@ public class Main extends javax.swing.JFrame {
                         styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), pinkAttributeSet, false);
                     }else if(t.getTipo() == 37){
                         styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), greenAttributeSet, false);
+                    }else if(t.getTipo() == -3 || t.getTipo() == -4){
+                        styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), grayAttributeSet, false);
                     }
                 }
             } catch (IOException ex) {
