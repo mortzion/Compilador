@@ -171,7 +171,7 @@ public class Main extends javax.swing.JFrame {
                 Scanner s = new Scanner(f);
                 String line = "";
                 while (s.hasNext()) {
-                    line += s.nextLine() + "\n";
+                    line += s.nextLine() + System.lineSeparator();
                 }  
                 fonteBox.setText(line);
             } catch (FileNotFoundException ex) {
@@ -338,7 +338,7 @@ public class Main extends javax.swing.JFrame {
                 while ((t = a.yylex())!=null) {
                     if(t.getTipo()>=0 && t.getTipo()<=16){
                         styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), blueAttributeSet, false);
-                    }else if((t.getTipo()>=19 && t.getTipo()<=34) || t.getTipo()==38){
+                    }else if((t.getTipo()>=23 && t.getTipo()<=34) || t.getTipo()==38){
                         styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), redAttributeSet, false);
                     }else if(t.getTipo() == 35 || t.getTipo() == 36){
                         styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), pinkAttributeSet, false);
