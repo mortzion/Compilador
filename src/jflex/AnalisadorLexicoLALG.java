@@ -57,10 +57,10 @@ public class AnalisadorLexicoLALG {
     "\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17"+
     "\1\2\1\1\1\20\1\21\2\3\1\22\4\3\1\23"+
     "\4\3\1\24\6\3\1\25\1\26\1\27\1\30\2\31"+
-    "\2\20\2\3\1\32\1\33\1\34\1\3\1\35\2\3"+
-    "\1\36\1\37\5\3\1\40\2\3\1\41\1\42\3\3"+
-    "\1\43\1\44\5\3\1\45\1\46\1\47\1\50\3\3"+
-    "\1\51\1\3\1\52\1\3\1\53";
+    "\2\32\2\3\1\33\1\34\1\35\1\3\1\36\2\3"+
+    "\1\37\1\40\5\3\1\41\2\3\1\42\1\43\3\3"+
+    "\1\44\1\45\5\3\1\46\1\47\1\50\1\51\3\3"+
+    "\1\52\1\3\1\53\1\3\1\54";
 
   private static int [] zzUnpackAction() {
     int [] result = new int[104];
@@ -698,175 +698,179 @@ public void tokensComentarios(boolean tokensComentarios){
           case 1: 
             { return criarToken(yytext(),-1);
             }
-          case 44: break;
+          case 45: break;
           case 2: 
             { /****/
             }
-          case 45: break;
+          case 46: break;
           case 3: 
             { return criarToken(yytext(),37);
             }
-          case 46: break;
+          case 47: break;
           case 4: 
             { return criarToken(yytext(),17);
             }
-          case 47: break;
+          case 48: break;
           case 5: 
             { return criarToken(yytext(),18);
             }
-          case 48: break;
+          case 49: break;
           case 6: 
             { return criarToken(yytext(),19);
             }
-          case 49: break;
+          case 50: break;
           case 7: 
             { return criarToken(yytext(),20);
             }
-          case 50: break;
+          case 51: break;
           case 8: 
             { return criarToken(yytext(),21);
             }
-          case 51: break;
+          case 52: break;
           case 9: 
             { return criarToken(yytext(),23);
             }
-          case 52: break;
+          case 53: break;
           case 10: 
             { return criarToken(yytext(),24);
             }
-          case 53: break;
+          case 54: break;
           case 11: 
             { return criarToken(yytext(),28);
             }
-          case 54: break;
+          case 55: break;
           case 12: 
             { return criarToken(yytext(),29);
             }
-          case 55: break;
+          case 56: break;
           case 13: 
             { return criarToken(yytext(),31);
             }
-          case 56: break;
+          case 57: break;
           case 14: 
             { return criarToken(yytext(),35);
             }
-          case 57: break;
+          case 58: break;
           case 15: 
             { return criarToken(yytext(),38);
             }
-          case 58: break;
-          case 16: 
-            { if(tokensComentarios)return criarToken(yytext(),-4);
-            }
           case 59: break;
-          case 17: 
-            { return criarToken(yytext(),-4);
+          case 16: 
+            { return criarToken("{",-5);
             }
           case 60: break;
+          case 17: 
+            { return criarToken("}",-6);
+            }
+          case 61: break;
           case 18: 
             { return criarToken(yytext(),32);
             }
-          case 61: break;
+          case 62: break;
           case 19: 
             { return criarToken(yytext(),9);
             }
-          case 62: break;
+          case 63: break;
           case 20: 
             { return criarToken(yytext(),5);
             }
-          case 63: break;
+          case 64: break;
           case 21: 
             { return criarToken(yytext(),22);
             }
-          case 64: break;
+          case 65: break;
           case 22: 
             { return criarToken(yytext(),25);
             }
-          case 65: break;
+          case 66: break;
           case 23: 
             { return criarToken(yytext(),27);
             }
-          case 66: break;
+          case 67: break;
           case 24: 
             { return criarToken(yytext(),26);
             }
-          case 67: break;
+          case 68: break;
           case 25: 
             { return criarToken(yytext(),-2);
             }
-          case 68: break;
-          case 26: 
-            { return criarToken(yytext(),33);
-            }
           case 69: break;
-          case 27: 
-            { return criarToken(yytext(),1);
+          case 26: 
+            { if(tokensComentarios)return criarToken(yytext(),-4);
             }
           case 70: break;
-          case 28: 
-            { return criarToken(yytext(),4);
+          case 27: 
+            { return criarToken(yytext(),33);
             }
           case 71: break;
-          case 29: 
-            { return criarToken(yytext(),30);
+          case 28: 
+            { return criarToken(yytext(),1);
             }
           case 72: break;
-          case 30: 
-            { return criarToken(yytext(),14);
+          case 29: 
+            { return criarToken(yytext(),4);
             }
           case 73: break;
-          case 31: 
-            { return criarToken(yytext(),34);
+          case 30: 
+            { return criarToken(yytext(),30);
             }
           case 74: break;
-          case 32: 
-            { return criarToken(yytext(),36);
+          case 31: 
+            { return criarToken(yytext(),14);
             }
           case 75: break;
-          case 33: 
-            { return criarToken(yytext(),10);
+          case 32: 
+            { return criarToken(yytext(),34);
             }
           case 76: break;
-          case 34: 
-            { return criarToken(yytext(),7);
+          case 33: 
+            { return criarToken(yytext(),36);
             }
           case 77: break;
-          case 35: 
-            { return criarToken(yytext(),12);
+          case 34: 
+            { return criarToken(yytext(),10);
             }
           case 78: break;
-          case 36: 
-            { return criarToken(yytext(),6);
+          case 35: 
+            { return criarToken(yytext(),7);
             }
           case 79: break;
-          case 37: 
-            { return criarToken(yytext(),3);
+          case 36: 
+            { return criarToken(yytext(),12);
             }
           case 80: break;
-          case 38: 
-            { return criarToken(yytext(),13);
+          case 37: 
+            { return criarToken(yytext(),6);
             }
           case 81: break;
-          case 39: 
-            { return criarToken(yytext(),11);
+          case 38: 
+            { return criarToken(yytext(),3);
             }
           case 82: break;
-          case 40: 
-            { return criarToken(yytext(),8);
+          case 39: 
+            { return criarToken(yytext(),13);
             }
           case 83: break;
-          case 41: 
-            { return criarToken(yytext(),0);
+          case 40: 
+            { return criarToken(yytext(),11);
             }
           case 84: break;
-          case 42: 
-            { return criarToken(yytext(),16);
+          case 41: 
+            { return criarToken(yytext(),8);
             }
           case 85: break;
-          case 43: 
-            { return criarToken(yytext(),2);
+          case 42: 
+            { return criarToken(yytext(),0);
             }
           case 86: break;
+          case 43: 
+            { return criarToken(yytext(),16);
+            }
+          case 87: break;
+          case 44: 
+            { return criarToken(yytext(),2);
+            }
+          case 88: break;
           default:
             zzScanError(ZZ_NO_MATCH);
         }

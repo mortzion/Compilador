@@ -67,8 +67,8 @@ public class Token {
 
     public String getTokenName(){
         switch(this.tipo){
-            case -4: return "BLOCO_COMENTARIO_SEM_ABRIR";
-            case -3: return "BLOCO_COMENTARIO_SEM_FECHAR";
+            case -6: return "BLOCO_COMENTARIO_SEM_ABRIR";
+            case -5: return "BLOCO_COMENTARIO_SEM_FECHAR";
             case -2: return "NUM_REAL_MALFORMADO";
             case -1: return "INVALIDO";
             case 0: return "RSRVDA_PROGRAM";

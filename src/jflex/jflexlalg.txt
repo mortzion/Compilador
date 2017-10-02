@@ -66,8 +66,10 @@ NUM_REAL = [0-9]+\.[0-9]+               //tipo = 36
 IDENTIFICADOR = [_|a-z|A-Z][_|a-z|A-Z|0-9]*  //tipo = 37
 PONTO = "."                             //tipo=38    
 
-T1 = "//"[^\n]*\n?
-T2 = "{"[^}]*"}"?
+COMENTARIO_LINHA = "//"[^\n]*\n?        //tipo -4
+COMENTARIO_BLOCO = "{"[^}]*"}"         //tipo -4
+COMENTARIO_BLOCO_SEM_FECHAR = "{"[^}]* //tipo -5
+COMENTARIO_BLOCO_SEM_ABRIR = "}"        //tipo -6
 
 NUM_REAL_MALFORMADO = [0-9][0-9]*\.|\.[0-9][0-9]* //tipo=-2
 
@@ -77,11 +79,12 @@ NUM_REAL_MALFORMADO = [0-9][0-9]*\.|\.[0-9][0-9]* //tipo=-2
 %%
 
 <YYINITIAL>{
-    {T1} {if(tokensComentarios)return criarToken(yytext(),-4);}
-    {T2} {if(tokensComentarios)return criarToken(yytext(),-4);}
-    "//"    {yybegin(COMENTARIO_UNICO);}
-    "{"     {yybegin(COMENTARIO_BLOCO);}
-    "}"     {return criarToken(yytext(),-4);}
+    
+    {COMENTARIO_LINHA} {if(tokensComentarios)return criarToken(yytext(),-4);}
+    {COMENTARIO_BLOCO} {if(tokensComentarios)return criarToken(yytext(),-4);}
+    {COMENTARIO_BLOCO_SEM_FECHAR}   {return criarToken("{",-5);}
+    {COMENTARIO_BLOCO_SEM_ABRIR}    {return criarToken("}",-6);}
+
     {DELIMITADOR}   {/****/}
     
     {RSRVDA_PROGRAM}    {return criarToken(yytext(),0);}
