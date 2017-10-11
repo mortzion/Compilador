@@ -5,6 +5,8 @@
  */
 package GUI;
 
+import cup.parser;
+import cup.sym;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java_cup.runtime.Symbol;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import jflex.AnalisadorLexicoLALG;
@@ -39,10 +42,12 @@ public class Main extends javax.swing.JFrame {
      * Creates new form Main
      */
     private CustomDocumentFilter cdf;
- 
+
     public Main() {
         initComponents();
         cdf = new CustomDocumentFilter();
+        TextLineNumber tln = new TextLineNumber(fonteBox);
+        jScrollPane3.setRowHeaderView(tln);
     }
 
     /**
@@ -65,6 +70,7 @@ public class Main extends javax.swing.JFrame {
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -123,6 +129,14 @@ public class Main extends javax.swing.JFrame {
         });
         jMenu2.add(jMenuItem1);
 
+        jMenuItem3.setText("Sintatico");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem3);
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -131,16 +145,16 @@ public class Main extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 854, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane3)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 854, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
-                            .addComponent(jLabel2)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 845, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(jLabel2))
+                        .addGap(0, 816, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -172,13 +186,13 @@ public class Main extends javax.swing.JFrame {
                 String line = "";
                 while (s.hasNext()) {
                     line += s.nextLine() + System.lineSeparator();
-                }  
+                }
                 fonteBox.setText(line);
             } catch (FileNotFoundException ex) {
                 exit(1);
             }
             cdf.updateTextStyles();
-            fonteBox.repaint(); 
+            fonteBox.repaint();
         }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
@@ -187,13 +201,22 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void fonteBoxKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fonteBoxKeyTyped
-        
+
     }//GEN-LAST:event_fonteBoxKeyTyped
 
     private void fonteBoxKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fonteBoxKeyReleased
         cdf.updateTextStyles();
         fonteBox.repaint();
     }//GEN-LAST:event_fonteBoxKeyReleased
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        parser p = new parser(new AnalisadorLexicoLALG(new StringReader(fonteBox.getText())));
+        try {
+            p.debug_parse();
+        } catch (Exception ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -251,11 +274,11 @@ public class Main extends javax.swing.JFrame {
 
         AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
         Token atual;
-
         try {
             while (true) {
+                a.next_token();
                 atual = a.yylex();
-                if (atual == null) {
+                if (atual.getTipo() == sym.EOF) {
                     break;
                 } else {
                     tokens.add(atual);
@@ -275,6 +298,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable tokenTable;
@@ -287,12 +311,11 @@ public class Main extends javax.swing.JFrame {
         private final StyleContext styleContext = StyleContext.getDefaultStyleContext();
         private final AttributeSet blueAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.BLUE);
         private final AttributeSet blackAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.BLACK);
-        private final AttributeSet greenAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(0,153,0));
+        private final AttributeSet greenAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(0, 153, 0));
         private final AttributeSet redAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.RED);
-        private final AttributeSet pinkAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(255,0,255));
+        private final AttributeSet pinkAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(255, 0, 255));
         private final AttributeSet grayAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.gray);
-        
-        
+
         @Override
         public void insertString(FilterBypass fb, int offset, String text, AttributeSet attributeSet) throws BadLocationException {
             super.insertString(fb, offset, text, attributeSet);
@@ -326,31 +349,34 @@ public class Main extends javax.swing.JFrame {
             });
         }
 
-        
-        
         private void updateTextStyles() {
             // Clear existing styles
             styledDocument.setCharacterAttributes(0, fonteBox.getText().length(), blackAttributeSet, true);
             AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
             a.tokensComentarios(true);
             Token t = null;
+
             try {
-                while ((t = a.yylex())!=null) {
-                    if(t.getTipo()>=0 && t.getTipo()<=16){
-                        styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), blueAttributeSet, false);
-                    }else if((t.getTipo()>=23 && t.getTipo()<=34) || t.getTipo()==38){
-                        styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), redAttributeSet, false);
-                    }else if(t.getTipo() == 35 || t.getTipo() == 36){
-                        styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), pinkAttributeSet, false);
-                    }else if(t.getTipo() == 37){
-                        styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), greenAttributeSet, false);
-                    }else if(t.getTipo() == -3 || t.getTipo() == -4){
-                        styledDocument.setCharacterAttributes(t.getOffset()-t.getLinha(), t.getLexema().length(), grayAttributeSet, false);
+                while (true) {
+                    Symbol s = a.next_token();
+                    t = a.yylex();
+                    if(t.getTipo() == sym.EOF)break;
+                    if (t.getTipo() >= 0 && t.getTipo() <= 16) {
+                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), blueAttributeSet, false);
+                    } else if ((t.getTipo() >= 23 && t.getTipo() <= 34) || t.getTipo() == 38) {
+                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), redAttributeSet, false);
+                    } else if (t.getTipo() == 35 || t.getTipo() == 36) {
+                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), pinkAttributeSet, false);
+                    } else if (t.getTipo() == 37) {
+                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), greenAttributeSet, false);
+                    } else if (t.getTipo() == -3 || t.getTipo() == -4) {
+                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), grayAttributeSet, false);
                     }
                 }
             } catch (IOException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
+
         }
     }
 

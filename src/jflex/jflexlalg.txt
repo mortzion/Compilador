@@ -1,25 +1,38 @@
 package jflex;
 import java_cup.runtime.*;
+import cup.sym;
 %%
 
 %{
 
-boolean tokensComentarios = false;
+    boolean tokensComentarios = false;
+    public int symbol;
+    private Symbol symbol(int type){
+        symbol = type;
+        return new Symbol(type,yyline,yycolumn);
+    }
 
-private Token criarToken(String lexema, int tipo) {
-   return new Token(lexema,tipo,yyline,yycolumn,yychar);
-}
-public void tokensComentarios(boolean tokensComentarios){
-    this.tokensComentarios = tokensComentarios;
-}
+    private Symbol symbol(int type, Object value){
+        symbol = type;
+        return new Symbol(type,yyline,yycolumn, value);
+    }
+
+    public Token yylex() {
+        return new Token(yytext(),symbol,yyline,yycolumn,yychar);
+    }
+
+    public void tokensComentarios(boolean tokensComentarios){
+        this.tokensComentarios = tokensComentarios;
+    }
 %}
 
 %public
 %class AnalisadorLexicoLALG
-%type Token
+//%type Token
 %line
 %column
 %char
+%cup
 DELIMITADOR = [\n| |\t|\r|\r\n]
 
 //Palavras Reservadas
@@ -34,8 +47,8 @@ RSRVDA_THEN = "then"                    //tipo = 6
 RSRVDA_ELSE = "else"                    //tipo = 7
 RSRVDA_WHILE = "while"                  //tipo = 8
 RSRVDA_DO = "do"                        //tipo = 9
-RSRVDA_READ = "read"                    //tipo = 10
-RSRVDA_WRITE = "write"                  //tipo = 11
+//RSRVDA_READ = "read"                    //tipo = 10
+//RSRVDA_WRITE = "write"                  //tipo = 11
 RSRVDA_TRUE = "true"                    //tipo = 12
 RSRVDA_FALSE = "false"                  //tipo = 13
 RSRVDA_INTEGER = "int"                  //tipo = 14
@@ -54,6 +67,7 @@ OP_MAIOR = ">"                          //tipo = 24
 OP_MENOR_IGUAL = "<="                   //tipo = 25
 OP_MAIOR_IGUAL = ">="                   //tipo = 26
 OP_DIFERENTE = "<>"                     //tipo = 27
+OP_IGUAL = "="
 OP_SOMA = "+"                           //tipo = 28
 OP_SUB = "-"                            //tipo = 29
 OP_DIV = "div"                          //tipo = 30
@@ -73,60 +87,59 @@ COMENTARIO_BLOCO_SEM_ABRIR = "}"        //tipo -6
 
 NUM_REAL_MALFORMADO = [0-9][0-9]*\.|\.[0-9][0-9]* //tipo=-2
 
-%state COMENTARIO_UNICO
-%state COMENTARIO_BLOCO
 
 %%
-
+<<EOF>> {return symbol(sym.EOF,"");}
 <YYINITIAL>{
     
-    {COMENTARIO_LINHA} {if(tokensComentarios)return criarToken(yytext(),-4);}
-    {COMENTARIO_BLOCO} {if(tokensComentarios)return criarToken(yytext(),-4);}
-    {COMENTARIO_BLOCO_SEM_FECHAR}   {return criarToken("{",-5);}
-    {COMENTARIO_BLOCO_SEM_ABRIR}    {return criarToken("}",-6);}
+    {COMENTARIO_LINHA} {if(tokensComentarios)return symbol(sym.COMENTARIO_LINHA,yytext());}
+    {COMENTARIO_BLOCO} {if(tokensComentarios)return symbol(sym.COMENTARIO_LINHA,yytext());}
+    {COMENTARIO_BLOCO_SEM_FECHAR}   {return symbol(sym.COMENTARIO_BLOCO_SEM_FECHAR,"{");}
+    {COMENTARIO_BLOCO_SEM_ABRIR}    {return symbol(sym.COMENTARIO_BLOCO_SEM_ABRIR,"}");}
 
     {DELIMITADOR}   {/****/}
     
-    {RSRVDA_PROGRAM}    {return criarToken(yytext(),0);}
-    {RSRVDA_VAR}    {return criarToken(yytext(),1);}
-    {RSRVDA_PROCEDURE}    {return criarToken(yytext(),2);}
-    {RSRVDA_BEGIN}    {return criarToken(yytext(),3);}
-    {RSRVDA_END}    {return criarToken(yytext(),4);}
-    {RSRVDA_IF}    {return criarToken(yytext(),5);}
-    {RSRVDA_THEN}    {return criarToken(yytext(),6);}
-    {RSRVDA_ELSE}    {return criarToken(yytext(),7);}
-    {RSRVDA_WHILE}    {return criarToken(yytext(),8);}
-    {RSRVDA_DO}    {return criarToken(yytext(),9);}
-    {RSRVDA_READ}    {return criarToken(yytext(),10);}
-    {RSRVDA_WRITE}    {return criarToken(yytext(),11);}
-    {RSRVDA_TRUE}    {return criarToken(yytext(),12);}
-    {RSRVDA_FALSE}    {return criarToken(yytext(),13);}
-    {RSRVDA_INTEGER}    {return criarToken(yytext(),14);}
-    {RSRVDA_BOOLEAN}    {return criarToken(yytext(),16);}
+    {RSRVDA_PROGRAM}    {return symbol(sym.RSRVDA_PROGRAM,yytext());}
+    {RSRVDA_VAR}    {return symbol(sym.RSRVDA_VAR,yytext());}
+    {RSRVDA_PROCEDURE}    {return symbol(sym.RSRVDA_PROCEDURE,yytext());}
+    {RSRVDA_BEGIN}    {return symbol(sym.RSRVDA_BEGIN,yytext());}
+    {RSRVDA_END}    {return symbol(sym.RSRVDA_END,yytext());}
+    {RSRVDA_IF}    {return symbol(sym.RSRVDA_IF,yytext());}
+    {RSRVDA_THEN}    {return symbol(sym.RSRVDA_THEN,yytext());}
+    {RSRVDA_ELSE}    {return symbol(sym.RSRVDA_ELSE,yytext());}
+    {RSRVDA_WHILE}    {return symbol(sym.RSRVDA_WHILE,yytext());}
+    {RSRVDA_DO}    {return symbol(sym.RSRVDA_DO,yytext());}
+    //{RSRVDA_READ}    {return symbol(sym.RSRVDA_READ,yytext());}
+    //{RSRVDA_WRITE}    {return symbol(sym.RSRVDA_WRITE,yytext());}
+    {RSRVDA_TRUE}    {return symbol(sym.RSRVDA_TRUE,yytext());}
+    {RSRVDA_FALSE}    {return symbol(sym.RSRVDA_FALSE,yytext());}
+    {RSRVDA_INTEGER}    {return symbol(sym.RSRVDA_INTEGER,yytext());}
+    {RSRVDA_BOOLEAN}    {return symbol(sym.RSRVDA_BOOLEAN,yytext());}
 
-    {PTO_VIRGULA}    {return criarToken(yytext(),17);}
-    {DOIS_PONTOS}    {return criarToken(yytext(),18);}
-    {VIRGULA}    {return criarToken(yytext(),19);}
-    {ABRE_P}    {return criarToken(yytext(),20);}
-    {FECHA_P}    {return criarToken(yytext(),21);}
-    {ATRIBUIÇÃO}    {return criarToken(yytext(),22);}
-    {OP_MENOR}    {return criarToken(yytext(),23);}
-    {OP_MAIOR}    {return criarToken(yytext(),24);}
-    {OP_MENOR_IGUAL}    {return criarToken(yytext(),25);}
-    {OP_MAIOR_IGUAL}    {return criarToken(yytext(),26);}
-    {OP_DIFERENTE}    {return criarToken(yytext(),27);}
-    {OP_SOMA}    {return criarToken(yytext(),28);}
-    {OP_SUB}    {return criarToken(yytext(),29);}
-    {OP_DIV}    {return criarToken(yytext(),30);}
-    {OP_MULT}    {return criarToken(yytext(),31);}
-    {OP_OR}    {return criarToken(yytext(),32);}
-    {OP_AND}    {return criarToken(yytext(),33);}
-    {OP_NOT}    {return criarToken(yytext(),34);}
-    {NUM_INTEIRO}    {return criarToken(yytext(),35);}
-    {NUM_REAL}    {return criarToken(yytext(),36);}
-    {IDENTIFICADOR} {return criarToken(yytext(),37);}
-    {PONTO} {return criarToken(yytext(),38);}
-    {NUM_REAL_MALFORMADO}   {return criarToken(yytext(),-2);}
-    .   {return criarToken(yytext(),-1);}
+    {PTO_VIRGULA}    {return symbol(sym.PTO_VIRGULA,yytext());}
+    {DOIS_PONTOS}    {return symbol(sym.DOIS_PONTOS,yytext());}
+    {VIRGULA}    {return symbol(sym.VIRGULA,yytext());}
+    {ABRE_P}    {return symbol(sym.ABRE_P,yytext());}
+    {FECHA_P}    {return symbol(sym.FECHA_P,yytext());}
+    {ATRIBUIÇÃO}    {return symbol(sym.ATRIBUIÇÃO,yytext());}
+    {OP_MENOR}    {return symbol(sym.OP_MENOR,yytext());}
+    {OP_MAIOR}    {return symbol(sym.OP_MAIOR,yytext());}
+    {OP_MENOR_IGUAL}    {return symbol(sym.OP_MENOR_IGUAL,yytext());}
+    {OP_MAIOR_IGUAL}    {return symbol(sym.OP_MAIOR_IGUAL,yytext());}
+    {OP_DIFERENTE}    {return symbol(sym.OP_DIFERENTE,yytext());}
+    {OP_IGUAL}      {return symbol(sym.OP_IGUAL,yytext());}
+    {OP_SOMA}    {return symbol(sym.OP_SOMA,yytext());}
+    {OP_SUB}    {return symbol(sym.OP_SUB,yytext());}
+    {OP_DIV}    {return symbol(sym.OP_DIV,yytext());}
+    {OP_MULT}    {return symbol(sym.OP_MULT,yytext());}
+    {OP_OR}    {return symbol(sym.OP_OR,yytext());}
+    {OP_AND}    {return symbol(sym.OP_AND,yytext());}
+    {OP_NOT}    {return symbol(sym.OP_NOT,yytext());}
+    {NUM_INTEIRO}    {return symbol(sym.NUM_INTEIRO,yytext());}
+    {NUM_REAL}    {return symbol(sym.NUM_REAL,yytext());}
+    {IDENTIFICADOR} {return symbol(sym.IDENTIFICADOR,yytext());}
+    {PONTO} {return symbol(sym.PONTO,yytext());}
+    {NUM_REAL_MALFORMADO}   {return symbol(sym.NUM_REAL_MALFORMADO,yytext());}
+    .   {return symbol(sym.CHAR_INVALIDO,yytext());}
 }
-. {return criarToken(yytext(),-1);}
+. {return symbol(sym.CHAR_INVALIDO,yytext());}

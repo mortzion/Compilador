@@ -1,0 +1,242 @@
+import java_cup.runtime.*;
+
+parser code {:
+    
+    /* Change the method report_error so it will display the line and
+       column of where the error occurred in the input as well as the
+       reason for the error which is passed into the method in the
+       String 'message'. */
+    public void report_error(String message, Object info) {
+   
+        /* Create a StringBuilder called 'm' with the string 'Error' in it. */
+        StringBuilder m = new StringBuilder("Error");
+   
+        /* Check if the information passed to the method is the same
+           type as the type java_cup.runtime.Symbol. */
+        if (info instanceof java_cup.runtime.Symbol) {
+            /* Declare a java_cup.runtime.Symbol object 's' with the
+               information in the object info that is being typecasted
+               as a java_cup.runtime.Symbol object. */
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+   
+            /* Check if the line number in the input is greater or
+               equal to zero. */
+            if (s.left >= 0) {                
+                /* Add to the end of the StringBuilder error message
+                   the line number of the error in the input. */
+                m.append(" in line "+(s.left+1));   
+                /* Check if the column number in the input is greater
+                   or equal to zero. */
+                if (s.right >= 0)                    
+                    /* Add to the end of the StringBuilder error message
+                       the column number of the error in the input. */
+                    m.append(", column "+(s.right+1));
+            }
+        }
+   
+        /* Add to the end of the StringBuilder error message created in
+           this method the message that was passed into this method. */
+        m.append(" : "+message);
+   
+        /* Print the contents of the StringBuilder 'm', which contains
+           an error message, out on a line. */
+        System.err.println(m);
+    }
+   
+    /* Change the method report_fatal_error so when it reports a fatal
+       error it will display the line and column number of where the
+       fatal error occurred in the input as well as the reason for the
+       fatal error which is passed into the method in the object
+       'message' and then exit.*/
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+:};
+
+terminal RSRVDA_PROGRAM,RSRVDA_VAR,RSRVDA_PROCEDURE,RSRVDA_BEGIN,RSRVDA_END,RSRVDA_IF,RSRVDA_THEN,
+RSRVDA_ELSE,RSRVDA_WHILE,RSRVDA_DO,RSRVDA_TRUE,RSRVDA_FALSE,
+RSRVDA_INTEGER,RSRVDA_BOOLEAN,PTO_VIRGULA,DOIS_PONTOS,VIRGULA,ABRE_P,FECHA_P,ATRIBUIÇÃO,
+OP_MENOR,OP_MAIOR,OP_MENOR_IGUAL,OP_MAIOR_IGUAL,OP_DIFERENTE,OP_IGUAL,OP_SOMA,OP_SUB,
+OP_DIV ,OP_MULT ,OP_OR,OP_AND ,OP_NOT,NUM_INTEIRO,NUM_REAL ,IDENTIFICADOR ,
+PONTO    ,COMENTARIO_LINHA ,COMENTARIO_BLOCO ,COMENTARIO_BLOCO_SEM_FECHAR ,
+COMENTARIO_BLOCO_SEM_ABRIR,NUM_REAL_MALFORMADO, CHAR_INVALIDO;
+
+non terminal Object programa,bloco,apos_pt_dec_var,pt_dec_var,pt_dec_var2,dec_var,
+lsta_id,lsta_id2, pt_dec_sub, pt2_dec_sub ,dec_sub,dec_sub2, prmtrs_formal, 
+sec_prmtrs_formal, lsta_prmtrs_formal ,cmd_composto ,lsta_cmd ,cmd ,atribuicao, 
+chamada_sub ,chamada_sub2 ,cmd_condicional, cmd_condicional2 ,cmd_repetitivo ,
+expressao ,expressao2 ,relacao ,exp_simples ,lista_exp_simples, termo ,
+lista_termo, fator ,variavel ,identificador2, lsta_expressao ,lsta_expressao2,tipo,
+lista_exp_simples2;
+
+precedence left OP_SOMA, OP_SUB;
+precedence left OP_MULT, OP_DIV;
+
+programa ::= RSRVDA_PROGRAM IDENTIFICADOR PTO_VIRGULA bloco PONTO;
+
+bloco ::= pt_dec_var apos_pt_dec_var |
+          pt_dec_sub cmd_composto |
+          cmd_composto;
+
+apos_pt_dec_var ::= dec_sub cmd_composto|
+                    cmd_composto;
+import java_cup.runtime.*;
+
+parser code {:
+    
+    /* Change the method report_error so it will display the line and
+       column of where the error occurred in the input as well as the
+       reason for the error which is passed into the method in the
+       String 'message'. */
+    public void report_error(String message, Object info) {
+   
+        /* Create a StringBuilder called 'm' with the string 'Error' in it. */
+        StringBuilder m = new StringBuilder("Error");
+   
+        /* Check if the information passed to the method is the same
+           type as the type java_cup.runtime.Symbol. */
+        if (info instanceof java_cup.runtime.Symbol) {
+            /* Declare a java_cup.runtime.Symbol object 's' with the
+               information in the object info that is being typecasted
+               as a java_cup.runtime.Symbol object. */
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+   
+            /* Check if the line number in the input is greater or
+               equal to zero. */
+            if (s.left >= 0) {                
+                /* Add to the end of the StringBuilder error message
+                   the line number of the error in the input. */
+                m.append(" in line "+(s.left+1));   
+                /* Check if the column number in the input is greater
+                   or equal to zero. */
+                if (s.right >= 0)                    
+                    /* Add to the end of the StringBuilder error message
+                       the column number of the error in the input. */
+                    m.append(", column "+(s.right+1));
+            }
+        }
+   
+        /* Add to the end of the StringBuilder error message created in
+           this method the message that was passed into this method. */
+        m.append(" : "+message);
+   
+        /* Print the contents of the StringBuilder 'm', which contains
+           an error message, out on a line. */
+        System.err.println(m);
+    }
+   
+    /* Change the method report_fatal_error so when it reports a fatal
+       error it will display the line and column number of where the
+       fatal error occurred in the input as well as the reason for the
+       fatal error which is passed into the method in the object
+       'message' and then exit.*/
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+:};
+
+terminal RSRVDA_PROGRAM,RSRVDA_VAR,RSRVDA_PROCEDURE,RSRVDA_BEGIN,RSRVDA_END,RSRVDA_IF,RSRVDA_THEN,
+RSRVDA_ELSE,RSRVDA_WHILE,RSRVDA_DO,RSRVDA_TRUE,RSRVDA_FALSE,
+RSRVDA_INTEGER,RSRVDA_BOOLEAN,PTO_VIRGULA,DOIS_PONTOS,VIRGULA,ABRE_P,FECHA_P,ATRIBUIÇÃO,
+OP_MENOR,OP_MAIOR,OP_MENOR_IGUAL,OP_MAIOR_IGUAL,OP_DIFERENTE,OP_IGUAL,OP_SOMA,OP_SUB,
+OP_DIV ,OP_MULT ,OP_OR,OP_AND ,OP_NOT,NUM_INTEIRO,NUM_REAL ,IDENTIFICADOR ,
+PONTO    ,COMENTARIO_LINHA ,COMENTARIO_BLOCO ,COMENTARIO_BLOCO_SEM_FECHAR ,
+COMENTARIO_BLOCO_SEM_ABRIR,NUM_REAL_MALFORMADO, CHAR_INVALIDO;
+
+non terminal Object programa,bloco,apos_pt_dec_var,pt_dec_var,pt_dec_var2,dec_var,
+lsta_id,lsta_id2, pt_dec_sub, pt2_dec_sub ,dec_sub,dec_sub2, prmtrs_formal, 
+sec_prmtrs_formal, lsta_prmtrs_formal ,cmd_composto ,lsta_cmd ,cmd ,atribuicao, 
+chamada_sub ,chamada_sub2 ,cmd_condicional, cmd_condicional2 ,cmd_repetitivo ,
+expressao ,expressao2 ,relacao ,exp_simples ,lista_exp_simples, termo ,
+lista_termo, fator ,variavel ,identificador2, lsta_expressao ,lsta_expressao2,tipo,
+lista_exp_simples2;
+
+precedence left OP_SOMA, OP_SUB;
+precedence left OP_MULT, OP_DIV;
+
+programa ::= RSRVDA_PROGRAM IDENTIFICADOR PTO_VIRGULA bloco PONTO;
+
+bloco ::= pt_dec_var apos_pt_dec_var |
+          pt_dec_sub cmd_composto |
+          cmd_composto;
+
+apos_pt_dec_var ::= dec_sub cmd_composto|
+                    cmd_composto;
+
+pt_dec_var ::= dec_var PTO_VIRGULA pt_dec_var2;
+
+pt_dec_var2 ::= pt_dec_var | /**vazio**/;
+
+dec_var ::= tipo lsta_id;
+
+lsta_id ::= IDENTIFICADOR lsta_id2;
+
+lsta_id2 ::= VIRGULA lsta_id | /**VAZIO**/;
+
+pt_dec_sub ::= dec_sub PTO_VIRGULA pt2_dec_sub;
+
+pt2_dec_sub ::= pt_dec_sub | /**VAZIO**/;
+
+dec_sub ::= RSRVDA_PROCEDURE IDENTIFICADOR dec_sub2;
+
+dec_sub2 ::= prmtrs_formal PTO_VIRGULA bloco | PTO_VIRGULA bloco;
+
+prmtrs_formal ::= ABRE_P sec_prmtrs_formal lsta_prmtrs_formal FECHA_P;
+
+sec_prmtrs_formal ::= RSRVDA_VAR lsta_id DOIS_PONTOS tipo |
+                       lsta_id DOIS_PONTOS tipo;
+
+lsta_prmtrs_formal ::= PTO_VIRGULA sec_prmtrs_formal lsta_prmtrs_formal|;
+
+cmd_composto ::= RSRVDA_BEGIN cmd lsta_cmd RSRVDA_END;
+
+lsta_cmd ::= PTO_VIRGULA cmd lsta_cmd | /**vazio**/;
+
+cmd ::= atribuicao | chamada_sub |cmd_composto | cmd_condicional | cmd_repetitivo;
+
+atribuicao ::= IDENTIFICADOR ATRIBUIÇÃO expressao;
+
+chamada_sub ::= IDENTIFICADOR chamada_sub2;
+chamada_sub2 ::= ABRE_P lsta_expressao FECHA_P | /**vazio**/;
+
+cmd_condicional ::= RSRVDA_IF expressao RSRVDA_THEN cmd_composto cmd_condicional2;
+cmd_condicional2 ::= /**VAZIO**/|RSRVDA_ELSE cmd_composto;
+
+cmd_repetitivo ::= RSRVDA_WHILE expressao RSRVDA_DO cmd_composto;
+
+expressao ::= exp_simples expressao2;
+expressao2 ::= relacao exp_simples |/**VAZIO**/;
+
+relacao ::= OP_IGUAL | OP_DIFERENTE | OP_MENOR_IGUAL |OP_MENOR| OP_MAIOR_IGUAL | OP_MAIOR;
+
+exp_simples ::= OP_SOMA termo lista_exp_simples |
+                OP_SUB termo lista_exp_simples  |
+                termo lista_exp_simples;
+
+lista_exp_simples ::= OP_SOMA termo lista_exp_simples |
+                        OP_SUB termo lista_exp_simples |
+                        OP_OR termo lista_exp_simples| /**vazio**/;
+
+
+termo ::= fator lista_termo;
+
+lista_termo ::= OP_DIV fator lista_termo |
+                OP_AND fator lista_termo |
+                OP_MULT fator lista_termo|
+                /**vazio**/;
+
+
+fator ::= variavel | NUM_INTEIRO | ABRE_P expressao FECHA_P | OP_NOT fator|
+                    RSRVDA_FALSE | RSRVDA_TRUE;
+
+variavel ::= IDENTIFICADOR identificador2;
+identificador2 ::= /**vazio**/ | expressao;
+
+lsta_expressao ::= expressao lsta_expressao2;
+
+lsta_expressao2 ::= VIRGULA expressao lsta_expressao2 | /*vazio*/ ;
+
+tipo ::= RSRVDA_BOOLEAN | RSRVDA_INTEGER;
+
