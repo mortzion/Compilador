@@ -1,7 +1,19 @@
 import java_cup.runtime.*;
+import java.util.ArrayList;
 
 parser code {:
     
+    private ArrayList<String> erros;
+
+    public parser(Scanner s, ArrayList<String> erros){
+        super(s);
+        this.erros = erros;
+    }
+
+    public int error_sync_size(){
+        return 1;
+    }
+
     /* Change the method report_error so it will display the line and
        column of where the error occurred in the input as well as the
        reason for the error which is passed into the method in the
@@ -50,7 +62,6 @@ parser code {:
        'message' and then exit.*/
     public void report_fatal_error(String message, Object info) {
         report_error(message, info);
-        System.exit(1);
     }
 :};
 
@@ -67,13 +78,13 @@ lsta_id,lsta_id2, pt_dec_sub, pt2_dec_sub ,dec_sub,dec_sub2, prmtrs_formal,
 sec_prmtrs_formal, lsta_prmtrs_formal ,cmd_composto ,lsta_cmd ,cmd ,atribuicao, 
 chamada_sub ,chamada_sub2 ,cmd_condicional, cmd_condicional2 ,cmd_repetitivo ,
 expressao ,expressao2 ,relacao ,exp_simples ,lista_exp_simples, termo ,
-lista_termo, fator ,variavel ,identificador2, lsta_expressao ,lsta_expressao2,tipo,
-lista_exp_simples2;
+lista_termo, fator ,variavel , lsta_expressao ,lsta_expressao2,tipo,dec_sub3;
 
-//precedence left OP_SOMA, OP_SUB;
-//precedence left OP_MULT, OP_DIV;
+non terminal teste, teste2;
 
-start with pt_dec_var;
+precedence left OP_SOMA, OP_SUB;
+precedence left OP_MULT, OP_DIV;
+precedence left RSRVDA_ELSE;
 
 programa ::= RSRVDA_PROGRAM IDENTIFICADOR PTO_VIRGULA bloco PONTO;
 
@@ -81,7 +92,7 @@ bloco ::= pt_dec_var apos_pt_dec_var |
           pt_dec_sub cmd_composto |
           cmd_composto;
 
-apos_pt_dec_var ::= dec_sub cmd_composto|
+apos_pt_dec_var ::= pt_dec_sub cmd_composto|
                     cmd_composto;
 
 pt_dec_var ::= dec_var PTO_VIRGULA pt_dec_var2;
@@ -93,14 +104,16 @@ dec_var ::= tipo lsta_id;
 lsta_id ::= IDENTIFICADOR lsta_id2;
 
 lsta_id2 ::= VIRGULA lsta_id | /**VAZIO**/;
-
+ 
 pt_dec_sub ::= dec_sub PTO_VIRGULA pt2_dec_sub;
 
 pt2_dec_sub ::= pt_dec_sub | /**VAZIO**/;
 
 dec_sub ::= RSRVDA_PROCEDURE IDENTIFICADOR dec_sub2;
 
-dec_sub2 ::= prmtrs_formal PTO_VIRGULA bloco | PTO_VIRGULA bloco;
+dec_sub2 ::= prmtrs_formal PTO_VIRGULA  dec_sub3 | PTO_VIRGULA dec_sub3;
+
+dec_sub3 ::= pt_dec_var cmd_composto | cmd_composto;
 
 prmtrs_formal ::= ABRE_P sec_prmtrs_formal lsta_prmtrs_formal FECHA_P;
 
@@ -115,15 +128,18 @@ lsta_cmd ::= PTO_VIRGULA cmd lsta_cmd | /**vazio**/;
 
 cmd ::= atribuicao | chamada_sub |cmd_composto | cmd_condicional | cmd_repetitivo;
 
-atribuicao ::= IDENTIFICADOR ATRIBUIÇÃO expressao;
+atribuicao ::= IDENTIFICADOR ATRIBUIÇÃO expressao
+               | error {:System.err.println("Erro na construção da atribuição");:}
+               | IDENTIFICADOR error expressao {:System.err.println("Operador de atribuição incorreto");:}
+               | IDENTIFICADOR ATRIBUIÇÃO error {:System.err.println("Expressão ilegal na atribuição");:};
 
 chamada_sub ::= IDENTIFICADOR chamada_sub2;
 chamada_sub2 ::= ABRE_P lsta_expressao FECHA_P | /**vazio**/;
 
-cmd_condicional ::= RSRVDA_IF expressao RSRVDA_THEN cmd_composto cmd_condicional2;
-cmd_condicional2 ::= /**VAZIO**/|RSRVDA_ELSE cmd_composto;
+cmd_condicional ::= RSRVDA_IF expressao RSRVDA_THEN cmd cmd_condicional2;
+cmd_condicional2 ::= /**VAZIO**/|RSRVDA_ELSE cmd;
 
-cmd_repetitivo ::= RSRVDA_WHILE expressao RSRVDA_DO cmd_composto;
+cmd_repetitivo ::= RSRVDA_WHILE expressao RSRVDA_DO cmd;
 
 expressao ::= exp_simples expressao2;
 expressao2 ::= relacao exp_simples |/**VAZIO**/;
@@ -146,16 +162,18 @@ lista_termo ::= OP_DIV fator lista_termo |
                 OP_MULT fator lista_termo|
                 /**vazio**/;
 
-
 fator ::= variavel | NUM_INTEIRO | ABRE_P expressao FECHA_P | OP_NOT fator|
-                    RSRVDA_FALSE | RSRVDA_TRUE;
+                    RSRVDA_FALSE | RSRVDA_TRUE
+                    | ABRE_P error  {:System.out.println("Faltou fechar parentesis");:}
+                    | error FECHA_P {:System.out.println("Faltou abrir parentesis");:};
+                    
 
-variavel ::= IDENTIFICADOR identificador2;
-identificador2 ::= /**vazio**/ | expressao;
+variavel ::= IDENTIFICADOR;
 
 lsta_expressao ::= expressao lsta_expressao2;
 
 lsta_expressao2 ::= VIRGULA expressao lsta_expressao2 | /*vazio*/ ;
 
-tipo ::= RSRVDA_BOOLEAN | RSRVDA_INTEGER;
+
+tipo ::= RSRVDA_BOOLEAN | RSRVDA_INTEGER | error {:System.err.println("Expected int ou boolean");:};
 

@@ -14,7 +14,7 @@ import java.nio.file.Paths;
  * @author Matheus Prachedes Batista
  */
 public class Generator {
-
+     
     public static void main(String[] args) {
 
         String rootPath = Paths.get("").toAbsolutePath(). toString();

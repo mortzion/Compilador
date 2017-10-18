@@ -30,6 +30,7 @@ import javax.swing.text.DocumentFilter;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
+import jflex.CustomScanner;
 import jflex.Token;
 
 /**
@@ -210,12 +211,41 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_fonteBoxKeyReleased
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
-        parser p = new parser(new AnalisadorLexicoLALG(new StringReader(fonteBox.getText())));
+        ArrayList<Token> tokens = new ArrayList<>();
+        parser p = new parser(new CustomScanner(new StringReader(fonteBox.getText()),tokens));
+//        short[][] m = p.action_table();
+//        System.out.println("Action Table===================================");
+//        for(int i=0;i<m.length;i++){
+//            for(int j=0;j<m[i].length;j++){
+//                System.out.print(m[i][j] + " ");
+//            }
+//            System.out.println();
+//        }
+//        m = p.production_table();
+//        System.out.println("Production Table===================================");
+//        for(int i=0;i<m.length;i++){
+//            for(int j=0;j<m[i].length;j++){
+//                System.out.print(m[i][j] + " ");
+//            }
+//            System.out.println();
+//        }
+//        m = p.reduce_table();
+//        System.out.println("Reduce table===================================");
+//        for(int i=0;i<m.length;i++){
+//            for(int j=0;j<m[i].length;j++){
+//                System.out.print(m[i][j] + " ");
+//            }
+//            System.out.println();
+//        }
+//        System.out.flush();
         try {
-            p.debug_parse();
+            System.err.println("\n\n\nIniciando Análise Sintatica============================");
+            p.parse();
+            this.fillTokenTable(tokens);
         } catch (Exception ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+        System.err.println("Analise Sintatica finalizada com sucesso");
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     /**
