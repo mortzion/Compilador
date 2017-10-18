@@ -80,17 +80,9 @@ public class Main extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Lexema", "Tipo", "Linha", "Coluna Inicial", "Coluna Final"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, true
-            };
 
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
             }
-        });
+        ));
         jScrollPane2.setViewportView(tokenTable);
 
         jLabel1.setText("Tokens:");
@@ -150,12 +142,12 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane3)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 854, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2))
-                        .addGap(0, 816, Short.MAX_VALUE)))
+                        .addGap(0, 816, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -198,6 +190,7 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        this.reloadTable(0);
         this.fillTokenTable(this.getAllTokens());
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
@@ -211,42 +204,47 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_fonteBoxKeyReleased
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+
         ArrayList<Token> tokens = new ArrayList<>();
+        reloadTable(1);
         parser p = new parser(new CustomScanner(new StringReader(fonteBox.getText()),tokens));
-//        short[][] m = p.action_table();
-//        System.out.println("Action Table===================================");
-//        for(int i=0;i<m.length;i++){
-//            for(int j=0;j<m[i].length;j++){
-//                System.out.print(m[i][j] + " ");
-//            }
-//            System.out.println();
-//        }
-//        m = p.production_table();
-//        System.out.println("Production Table===================================");
-//        for(int i=0;i<m.length;i++){
-//            for(int j=0;j<m[i].length;j++){
-//                System.out.print(m[i][j] + " ");
-//            }
-//            System.out.println();
-//        }
-//        m = p.reduce_table();
-//        System.out.println("Reduce table===================================");
-//        for(int i=0;i<m.length;i++){
-//            for(int j=0;j<m[i].length;j++){
-//                System.out.print(m[i][j] + " ");
-//            }
-//            System.out.println();
-//        }
-//        System.out.flush();
         try {
-            System.err.println("\n\n\nIniciando Análise Sintatica============================");
             p.parse();
-            this.fillTokenTable(tokens);
         } catch (Exception ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.err.println("Analise Sintatica finalizada com sucesso");
     }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    public void reloadTable(int type) {
+        switch (type) {
+            case 0: {
+                DefaultTableModel model = new DefaultTableModel(0, 5);
+                String[] header = new String[5];
+                header[0] = "Lexema";
+                header[1] = "Tipo";
+                header[2] = "Linha";
+                header[3] = "Coluna Inicial";
+                header[4] = "Coluna Final";
+                model.setColumnIdentifiers(header);
+                tokenTable.setModel(model);
+                tokenTable.revalidate();
+                tokenTable.repaint();
+                break;
+            }
+            case 1: {
+                DefaultTableModel model = new DefaultTableModel(0, 3);
+                String[] header = new String[3];
+                header[0] = "Erro";
+                header[1] = "Linha";
+                header[2] = "Coluna";
+                model.setColumnIdentifiers(header);
+                tokenTable.setModel(model);
+                tokenTable.revalidate();
+                tokenTable.repaint();
+                break;
+            }
+        }
+    }
 
     /**
      * @param args the command line arguments
@@ -281,6 +279,20 @@ public class Main extends javax.swing.JFrame {
                 new Main().setVisible(true);
             }
         });
+    }
+
+    public void fillSintaxErrorTable(ArrayList<SintaxError> errors) {
+        DefaultTableModel dtm = (DefaultTableModel) tokenTable.getModel();
+        dtm.getDataVector().removeAllElements();
+        dtm.fireTableDataChanged();
+
+        String[] linha = new String[5];
+        for (SintaxError e : errors) {
+            linha[0] = String.valueOf(e.getLinha());
+            linha[1] = String.valueOf(e.getColuna());
+            linha[2] = e.getErro();
+            dtm.addRow(linha);
+        }
     }
 
     public void fillTokenTable(ArrayList<Token> tokens) {
@@ -390,7 +402,9 @@ public class Main extends javax.swing.JFrame {
                 while (true) {
                     Symbol s = a.next_token();
                     t = a.yylex();
-                    if(t.getTipo() == sym.EOF)break;
+                    if (t.getTipo() == sym.EOF) {
+                        break;
+                    }
                     if (t.getTipo() >= 0 && t.getTipo() <= 16) {
                         styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), blueAttributeSet, false);
                     } else if ((t.getTipo() >= 23 && t.getTipo() <= 34) || t.getTipo() == 38) {
