@@ -129,7 +129,7 @@ public class Token {
 
     @Override
     public String toString() {
-        return lexema + " -> " + tipo + " " + colunaInicio + " " + colunaFinal + " " + linha + " " + offset;
+        return lexema + " -> " + tipo + " " + colunaInicio + " " + colunaFinal + " " + (linha+1) + " " + offset;
     }
 
 }

@@ -5,6 +5,7 @@
  */
 package GUI;
 
+import parser.SintaxError;
 import cup.parser;
 import cup.sym;
 import java.awt.Color;
@@ -32,6 +33,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import jflex.CustomScanner;
 import jflex.Token;
+import parser.Sintatico;
 
 /**
  *
@@ -206,13 +208,16 @@ public class Main extends javax.swing.JFrame {
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
 
         ArrayList<Token> tokens = new ArrayList<>();
+        ArrayList<SintaxError> erros = new ArrayList<>();
         reloadTable(1);
-        parser p = new parser(new CustomScanner(new StringReader(fonteBox.getText()),tokens));
+        Sintatico s = new Sintatico(new CustomScanner((new StringReader(fonteBox.getText())), tokens),erros);
         try {
-            p.parse();
+            System.out.println(s.start());
         } catch (Exception ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+        reloadTable(1);
+        fillSintaxErrorTable(erros);
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     public void reloadTable(int type) {

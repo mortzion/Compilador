@@ -1,28 +1,267 @@
-first(cmd_composto) = BEGIN;
+programa -> RSRVDA_PROGRAM IDENTIFICADOR PTO_VIRGULA bloco PONTO
 
-first(lsta_cmd) = PTO_VIRGULA, vazio
+bloco -> pt_dec_var apos_pt_dec_var | pt_dec_sub cmd_composto | cmd_composto
 
-first(cmd) = BEGIN, IF, WHILE
+apos_pt_dec_var -> pt_dec_sub cmd_composto | cmd_composto
 
-first(cmd_cond) = IF
+pt_dec_var -> dec_var PTO_VIRGULA pt_dec_var2
 
-first(cmd_cond2) = ELSE, vazio
+pt_dec_var2 -> pt_dec_var | EPSILON
 
-first(loop) = WHILE
+dec_var -> tipo lsta_id
 
-======================================
+lsta_id -> IDENTIFICADOR lsta_id2
 
-next(cmd_composto) = next(cmd);
+lsta_id2 -> VIRGULA lsta_id | EPSILON
+ 
+pt_dec_sub -> dec_sub PTO_VIRGULA pt2_dec_sub
 
-next(lsta_cmd) = END
+pt2_dec_sub -> pt_dec_sub | EPSILON
+dec_sub -> RSRVDA_PROCEDURE IDENTIFICADOR dec_sub2
 
-next(cmd) = first(lsta_cmd), first(cmd_condicional2), next(loop), next(cond2);
+dec_sub2 -> prmtrs_formal PTO_VIRGULA  dec_sub3 | PTO_VIRGULA dec_sub3
 
-next(cmd) = PTO_VIRGULA, END, ELSE, next(cmd);
+dec_sub3 -> pt_dec_var cmd_composto | cmd_composto
 
-next(cond) = next(cmd);
+prmtrs_formal -> ABRE_P sec_prmtrs_formal lsta_prmtrs_formal FECHA_P
+sec_prmtrs_formal -> RSRVDA_VAR lsta_id DOIS_PONTOS tipo | lsta_id DOIS_PONTOS tipo
 
-next(cond2) = next(cmd);
+lsta_prmtrs_formal -> PTO_VIRGULA sec_prmtrs_formal lsta_prmtrs_formal | EPSILON
 
-next(loop) = next(cmd);
+cmd_composto -> RSRVDA_BEGIN cmd lsta_cmd RSRVDA_END
 
+lsta_cmd -> PTO_VIRGULA cmd lsta_cmd | EPSILON
+
+cmd -> atribuicao | chamada_sub |cmd_composto | cmd_condicional | cmd_repetitivo
+
+atribuicao -> IDENTIFICADOR ATRIBUIÇÃO expressao
+
+chamada_sub -> IDENTIFICADOR chamada_sub2
+chamada_sub2 -> ABRE_P lsta_expressao FECHA_P | EPSILON
+
+cmd_condicional -> RSRVDA_IF expressao RSRVDA_THEN cmd cmd_condicional2
+cmd_condicional2 -> EPSILON | RSRVDA_ELSE cmd
+
+cmd_repetitivo -> RSRVDA_WHILE expressao RSRVDA_DO cmd
+
+expressao -> exp_simples expressao2
+expressao2 -> relacao exp_simples | EPSILON
+
+relacao -> OP_IGUAL | OP_DIFERENTE | OP_MENOR_IGUAL | OP_MENOR | OP_MAIOR_IGUAL | OP_MAIOR
+
+exp_simples -> OP_SOMA termo lista_exp_simples | OP_SUB termo lista_exp_simples  | termo lista_exp_simples
+
+lista_exp_simples -> OP_SOMA termo lista_exp_simples |
+                        OP_SUB termo lista_exp_simples |
+                        OP_OR termo lista_exp_simples | EPSILON
+
+
+termo -> fator lista_termo
+
+lista_termo -> OP_DIV fator lista_termo | OP_AND fator lista_termo | OP_MULT fator lista_termo | EPSILON
+
+fator -> variavel | NUM_INTEIRO | ABRE_P expressao FECHA_P | OP_NOT fator | RSRVDA_FALSE | RSRVDA_TRUE       
+
+variavel -> IDENTIFICADOR
+
+lsta_expressao -> expressao lsta_expressao2
+
+lsta_expressao2 -> VIRGULA expressao lsta_expressao2 | EPSILON
+
+
+tipo -> RSRVDA_BOOLEAN | RSRVDA_INTEGER 
+
+
+
+
+
+First Set
+Non-Terminal Symbol	First Set
+RSRVDA_PROGRAM	RSRVDA_PROGRAM
+IDENTIFICADOR	IDENTIFICADOR
+PTO_VIRGULA	PTO_VIRGULA
+PONTO	PONTO
+ε	ε
+VIRGULA	VIRGULA
+RSRVDA_PROCEDURE	RSRVDA_PROCEDURE
+ABRE_P	ABRE_P
+FECHA_P	FECHA_P
+RSRVDA_VAR	RSRVDA_VAR
+DOIS_PONTOS	DOIS_PONTOS
+RSRVDA_BEGIN	RSRVDA_BEGIN
+RSRVDA_END	RSRVDA_END
+ATRIBUIÇÃO	ATRIBUIÇÃO
+RSRVDA_IF	RSRVDA_IF
+RSRVDA_THEN	RSRVDA_THEN
+RSRVDA_ELSE	RSRVDA_ELSE
+RSRVDA_WHILE	RSRVDA_WHILE
+RSRVDA_DO	RSRVDA_DO
+OP_IGUAL	OP_IGUAL
+OP_DIFERENTE	OP_DIFERENTE
+OP_MENOR_IGUAL	OP_MENOR_IGUAL
+OP_MENOR	OP_MENOR
+OP_MAIOR_IGUAL	OP_MAIOR_IGUAL
+OP_MAIOR	OP_MAIOR
+OP_SOMA	OP_SOMA
+OP_SUB	OP_SUB
+OP_DIV	OP_DIV
+OP_AND	OP_AND
+OP_MULT	OP_MULT
+NUM_INTEIRO	NUM_INTEIRO
+OP_NOT	OP_NOT
+RSRVDA_FALSE	RSRVDA_FALSE
+RSRVDA_TRUE	RSRVDA_TRUE
+RSRVDA_BOOLEAN	RSRVDA_BOOLEAN
+RSRVDA_INTEGER	RSRVDA_INTEGER
+programa	RSRVDA_PROGRAM
+pt_dec_var2	ε, RSRVDA_BOOLEAN, RSRVDA_INTEGER
+lsta_id	IDENTIFICADOR
+lsta_id2	VIRGULA, ε
+pt2_dec_sub	ε, RSRVDA_PROCEDURE
+dec_sub	RSRVDA_PROCEDURE
+dec_sub2	PTO_VIRGULA, ABRE_P
+prmtrs_formal	ABRE_P
+sec_prmtrs_formal	RSRVDA_VAR, IDENTIFICADOR
+lsta_prmtrs_formal	PTO_VIRGULA, ε
+cmd_composto	RSRVDA_BEGIN
+lsta_cmd	PTO_VIRGULA, ε
+atribuicao	IDENTIFICADOR
+chamada_sub	IDENTIFICADOR
+chamada_sub2	ABRE_P, ε
+cmd_condicional	RSRVDA_IF
+cmd_condicional2	ε, RSRVDA_ELSE
+cmd_repetitivo	RSRVDA_WHILE
+expressao2	ε, OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR
+relacao	OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR
+exp_simples	OP_SOMA, OP_SUB, NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+lista_exp_simples	OP_SOMA
+lista_termo	OP_DIV, OP_AND, OP_MULT, ε
+fator	NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+variavel	IDENTIFICADOR
+lsta_expressao2	VIRGULA, ε
+tipo	RSRVDA_BOOLEAN, RSRVDA_INTEGER
+dec_var	RSRVDA_BOOLEAN, RSRVDA_INTEGER
+pt_dec_sub	RSRVDA_PROCEDURE
+cmd	IDENTIFICADOR, RSRVDA_BEGIN, RSRVDA_WHILE, RSRVDA_IF
+apos_pt_dec_var	RSRVDA_PROCEDURE, RSRVDA_BEGIN
+pt_dec_var	RSRVDA_BOOLEAN, RSRVDA_INTEGER
+termo	NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+bloco	RSRVDA_BOOLEAN, RSRVDA_INTEGER, RSRVDA_BEGIN, RSRVDA_PROCEDURE
+dec_sub3	RSRVDA_BOOLEAN, RSRVDA_INTEGER, RSRVDA_BEGIN
+expressao	OP_SOMA, OP_SUB, NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+lsta_expressao	OP_SOMA, OP_SUB, NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+
+Follow Set
+Non-Terminal Symbol	Follow Set
+programa	$
+bloco	PONTO
+apos_pt_dec_var	PONTO
+pt_dec_var	RSRVDA_BEGIN, RSRVDA_PROCEDURE
+pt_dec_var2	RSRVDA_BEGIN, RSRVDA_PROCEDURE
+dec_var	PTO_VIRGULA
+lsta_id	DOIS_PONTOS, PTO_VIRGULA
+lsta_id2	DOIS_PONTOS, PTO_VIRGULA
+pt_dec_sub	RSRVDA_BEGIN
+pt2_dec_sub	RSRVDA_BEGIN
+dec_sub	PTO_VIRGULA
+dec_sub2	PTO_VIRGULA
+dec_sub3	PTO_VIRGULA
+prmtrs_formal	PTO_VIRGULA
+sec_prmtrs_formal	PTO_VIRGULA, FECHA_P
+lsta_prmtrs_formal	FECHA_P
+cmd_composto	RSRVDA_ELSE, PTO_VIRGULA, PONTO, RSRVDA_END
+lsta_cmd	RSRVDA_END
+cmd	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+atribuicao	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+chamada_sub	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+chamada_sub2	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+cmd_condicional	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+cmd_condicional2	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+cmd_repetitivo	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+expressao	VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+expressao2	VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+relacao	OP_SOMA, OP_SUB, NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+exp_simples	OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR, VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+lista_exp_simples	OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR, VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+termo	OP_SOMA, OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR, VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+lista_termo	OP_SOMA, OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR, VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+fator	OP_DIV, OP_AND, OP_MULT, OP_SOMA, OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR, VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+variavel	OP_DIV, OP_AND, OP_MULT, OP_SOMA, OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR, VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+lsta_expressao	FECHA_P
+lsta_expressao2	FECHA_P
+tipo	IDENTIFICADOR, PTO_VIRGULA, FECHA_P
+
+Predict Set
+#	Expression	Predict
+1	programa → RSRVDA_PROGRAM IDENTIFICADOR PTO_VIRGULA bloco PONTO	RSRVDA_PROGRAM
+2	bloco → pt_dec_var apos_pt_dec_var	RSRVDA_BOOLEAN, RSRVDA_INTEGER
+3	bloco → pt_dec_sub cmd_composto	RSRVDA_PROCEDURE
+4	bloco → cmd_composto	RSRVDA_BEGIN
+5	apos_pt_dec_var → pt_dec_sub cmd_composto	RSRVDA_PROCEDURE
+6	apos_pt_dec_var → cmd_composto	RSRVDA_BEGIN
+7	pt_dec_var → dec_var PTO_VIRGULA pt_dec_var2	RSRVDA_BOOLEAN, RSRVDA_INTEGER
+8	pt_dec_var2 → pt_dec_var	RSRVDA_BOOLEAN, RSRVDA_INTEGER
+9	pt_dec_var2 → ε	RSRVDA_BEGIN, RSRVDA_PROCEDURE
+10	dec_var → tipo lsta_id	RSRVDA_BOOLEAN, RSRVDA_INTEGER
+11	lsta_id → IDENTIFICADOR lsta_id2	IDENTIFICADOR
+12	lsta_id2 → VIRGULA lsta_id	VIRGULA
+13	lsta_id2 → ε	DOIS_PONTOS, PTO_VIRGULA
+14	pt_dec_sub → dec_sub PTO_VIRGULA pt2_dec_sub	RSRVDA_PROCEDURE
+15	pt2_dec_sub → pt_dec_sub	RSRVDA_PROCEDURE
+16	pt2_dec_sub → ε	RSRVDA_BEGIN
+17	dec_sub → RSRVDA_PROCEDURE IDENTIFICADOR dec_sub2	RSRVDA_PROCEDURE
+18	dec_sub2 → prmtrs_formal PTO_VIRGULA dec_sub3	ABRE_P
+19	dec_sub2 → PTO_VIRGULA dec_sub3	PTO_VIRGULA
+20	dec_sub3 → pt_dec_var cmd_composto	RSRVDA_BOOLEAN, RSRVDA_INTEGER
+21	dec_sub3 → cmd_composto	RSRVDA_BEGIN
+22	prmtrs_formal → ABRE_P sec_prmtrs_formal lsta_prmtrs_formal FECHA_P	ABRE_P
+23	sec_prmtrs_formal → RSRVDA_VAR lsta_id DOIS_PONTOS tipo	RSRVDA_VAR
+24	sec_prmtrs_formal → lsta_id DOIS_PONTOS tipo	IDENTIFICADOR
+25	lsta_prmtrs_formal → PTO_VIRGULA sec_prmtrs_formal lsta_prmtrs_formal	PTO_VIRGULA
+26	lsta_prmtrs_formal → ε	FECHA_P
+27	cmd_composto → RSRVDA_BEGIN cmd lsta_cmd RSRVDA_END	RSRVDA_BEGIN
+28	lsta_cmd → PTO_VIRGULA cmd lsta_cmd	PTO_VIRGULA
+29	lsta_cmd → ε	RSRVDA_END
+30	cmd → atribuicao	IDENTIFICADOR
+31	cmd → chamada_sub	IDENTIFICADOR
+32	cmd → cmd_composto	RSRVDA_BEGIN
+33	cmd → cmd_condicional	RSRVDA_IF
+34	cmd → cmd_repetitivo	RSRVDA_WHILE
+35	atribuicao → IDENTIFICADOR ATRIBUIÇÃO expressao	IDENTIFICADOR
+36	chamada_sub → IDENTIFICADOR chamada_sub2	IDENTIFICADOR
+37	chamada_sub2 → ABRE_P lsta_expressao FECHA_P	ABRE_P
+38	chamada_sub2 → ε	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+39	cmd_condicional → RSRVDA_IF expressao RSRVDA_THEN cmd cmd_condicional2	RSRVDA_IF
+40	cmd_condicional2 → ε	RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+41	cmd_condicional2 → RSRVDA_ELSE cmd	RSRVDA_ELSE
+42	cmd_repetitivo → RSRVDA_WHILE expressao RSRVDA_DO cmd	RSRVDA_WHILE
+43	expressao → exp_simples expressao2	OP_SOMA, OP_SUB, NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+44	expressao2 → relacao exp_simples	OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR
+45	expressao2 → ε	VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+46	relacao → OP_IGUAL	OP_IGUAL
+47	relacao → OP_DIFERENTE	OP_DIFERENTE
+48	relacao → OP_MENOR_IGUAL	OP_MENOR_IGUAL
+49	relacao → OP_MENOR	OP_MENOR
+50	relacao → OP_MAIOR_IGUAL	OP_MAIOR_IGUAL
+51	relacao → OP_MAIOR	OP_MAIOR
+52	exp_simples → OP_SOMA termo lista_exp_simples	OP_SOMA
+53	exp_simples → OP_SUB termo lista_exp_simples	OP_SUB
+54	exp_simples → termo lista_exp_simples	NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+55	lista_exp_simples → OP_SOMA termo lista_exp_simples	OP_SOMA
+56	termo → fator lista_termo	NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+57	lista_termo → OP_DIV fator lista_termo	OP_DIV
+58	lista_termo → OP_AND fator lista_termo	OP_AND
+59	lista_termo → OP_MULT fator lista_termo	OP_MULT
+60	lista_termo → ε	OP_SOMA, OP_IGUAL, OP_DIFERENTE, OP_MENOR_IGUAL, OP_MENOR, OP_MAIOR_IGUAL, OP_MAIOR, VIRGULA, FECHA_P, RSRVDA_DO, RSRVDA_THEN, RSRVDA_ELSE, PTO_VIRGULA, RSRVDA_END
+61	fator → variavel	IDENTIFICADOR
+62	fator → NUM_INTEIRO	NUM_INTEIRO
+63	fator → ABRE_P expressao FECHA_P	ABRE_P
+64	fator → OP_NOT fator	OP_NOT
+65	fator → RSRVDA_FALSE	RSRVDA_FALSE
+66	fator → RSRVDA_TRUE	RSRVDA_TRUE
+67	variavel → IDENTIFICADOR	IDENTIFICADOR
+68	lsta_expressao → expressao lsta_expressao2	OP_SOMA, OP_SUB, NUM_INTEIRO, ABRE_P, OP_NOT, RSRVDA_FALSE, RSRVDA_TRUE, IDENTIFICADOR
+69	lsta_expressao2 → VIRGULA expressao lsta_expressao2	VIRGULA
+70	lsta_expressao2 → ε	FECHA_P
+71	tipo → RSRVDA_BOOLEAN	RSRVDA_BOOLEAN
+72	tipo → RSRVDA_INTEGER	RSRVDA_INTEGER

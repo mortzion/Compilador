@@ -129,9 +129,6 @@ lsta_cmd ::= PTO_VIRGULA cmd lsta_cmd | /**vazio**/;
 cmd ::= atribuicao | chamada_sub |cmd_composto | cmd_condicional | cmd_repetitivo;
 
 atribuicao ::= IDENTIFICADOR ATRIBUIÇÃO expressao
-               | error {:System.err.println("Erro na construção da atribuição");:}
-               | IDENTIFICADOR error expressao {:System.err.println("Operador de atribuição incorreto");:}
-               | IDENTIFICADOR ATRIBUIÇÃO error {:System.err.println("Expressão ilegal na atribuição");:};
 
 chamada_sub ::= IDENTIFICADOR chamada_sub2;
 chamada_sub2 ::= ABRE_P lsta_expressao FECHA_P | /**vazio**/;
