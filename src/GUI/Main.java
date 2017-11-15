@@ -77,6 +77,7 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        tokenTable.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
         tokenTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -293,9 +294,9 @@ public class Main extends javax.swing.JFrame {
 
         String[] linha = new String[5];
         for (SintaxError e : errors) {
-            linha[0] = String.valueOf(e.getLinha());
+            linha[2] = String.valueOf(e.getLinha());
             linha[1] = String.valueOf(e.getColuna());
-            linha[2] = e.getErro();
+            linha[0] = e.getErro();
             dtm.addRow(linha);
         }
     }
