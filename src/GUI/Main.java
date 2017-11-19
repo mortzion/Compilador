@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
 import java_cup.runtime.Symbol;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import jflex.AnalisadorLexicoLALG;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.AttributeSet;
@@ -46,7 +48,7 @@ public class Main extends javax.swing.JFrame {
      */
     private CustomDocumentFilter cdf;
     private ArrayList<Token> tokensIgnorados;
-
+    private int size;
     public Main() {
         initComponents();
         cdf = new CustomDocumentFilter();
@@ -204,6 +206,11 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_fonteBoxKeyTyped
 
     private void fonteBoxKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fonteBoxKeyReleased
+        int newfontSize = fonteBox.getText().length();
+        if(size != newfontSize){
+            cdf.tokensIgnorados = null;
+            size = newfontSize;
+        }
         cdf.updateTextStyles();
         fonteBox.repaint();
     }//GEN-LAST:event_fonteBoxKeyReleased
@@ -213,7 +220,7 @@ public class Main extends javax.swing.JFrame {
         ArrayList<Token> tokens = new ArrayList<>();
         ArrayList<SintaxError> erros = new ArrayList<>();
         reloadTable(1);
-        Sintatico s = new Sintatico(new CustomScanner((new StringReader(fonteBox.getText())), tokens),erros);
+        Sintatico s = new Sintatico(new CustomScanner((new StringReader(fonteBox.getText())), tokens), erros);
         try {
             System.out.println(s.start());
         } catch (Exception ex) {
@@ -221,7 +228,7 @@ public class Main extends javax.swing.JFrame {
         }
         reloadTable(1);
         fillSintaxErrorTable(erros);
-        tokensIgnorados = s.getTokenIgnorados();
+        cdf.tokensIgnorados = s.getTokenIgnorados();
         cdf.updateTextStyles();
         repaint();
     }//GEN-LAST:event_jMenuItem3ActionPerformed
@@ -299,8 +306,8 @@ public class Main extends javax.swing.JFrame {
 
         String[] linha = new String[5];
         for (SintaxError e : errors) {
-            linha[2] = String.valueOf(e.getLinha());
-            linha[1] = String.valueOf(e.getColuna());
+            linha[2] = String.valueOf(e.getColuna());
+            linha[1] = String.valueOf(e.getLinha());
             linha[0] = e.getErro();
             dtm.addRow(linha);
         }
@@ -361,13 +368,14 @@ public class Main extends javax.swing.JFrame {
 
         private final StyledDocument styledDocument = fonteBox.getStyledDocument();
         private final StyleContext styleContext = StyleContext.getDefaultStyleContext();
+        private ArrayList<Token> tokensIgnorados;
         private final AttributeSet blueAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.BLUE);
         private final AttributeSet blackAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.BLACK);
         private final AttributeSet greenAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(0, 153, 0));
         private final AttributeSet redAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.RED);
         private final AttributeSet pinkAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(255, 0, 255));
         private final AttributeSet grayAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.gray);
-        
+
         @Override
         public void insertString(FilterBypass fb, int offset, String text, AttributeSet attributeSet) throws BadLocationException {
             super.insertString(fb, offset, text, attributeSet);
@@ -407,8 +415,7 @@ public class Main extends javax.swing.JFrame {
             AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
             a.tokensComentarios(true);
             Token t = null;
-
-                System.out.println(tokenIgnorados.size());
+            ArrayList<Token> copiaTokens = tokensIgnorados != null ? (ArrayList<Token>) tokensIgnorados.clone() : null;
             try {
                 while (true) {
                     Symbol s = a.next_token();
@@ -416,7 +423,7 @@ public class Main extends javax.swing.JFrame {
                     if (t.getTipo() == sym.EOF) {
                         break;
                     }
-                    AttributeSet ts=blackAttributeSet;
+                    AttributeSet ts = blackAttributeSet;
                     if (t.getTipo() >= 0 && t.getTipo() <= 16) {
                         ts = blueAttributeSet;
                     } else if ((t.getTipo() >= 23 && t.getTipo() <= 34) || t.getTipo() == 38) {
@@ -426,18 +433,19 @@ public class Main extends javax.swing.JFrame {
                     } else if (t.getTipo() == 37) {
                         ts = greenAttributeSet;
                     } else if (t.getTipo() == -3 || t.getTipo() == -4) {
-                        ts= grayAttributeSet;
+                        ts = grayAttributeSet;
                     }
-                    if(tokenIgnorados!=null && tokenIgnorados.contains(t)){
-                        tokenIgnorados.remove(t);
+                    if (tokensIgnorados != null && tokensIgnorados.contains(t)) {
+                        tokensIgnorados.remove(t);
                         ts = styleContext.addAttribute(ts, StyleConstants.Underline, true);
                     }
-                    styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(),ts, false);
+                    styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), ts, false);
                 }
+
             } catch (IOException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+            tokensIgnorados = copiaTokens;
         }
     }
 

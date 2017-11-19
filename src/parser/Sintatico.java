@@ -189,6 +189,7 @@ public class Sintatico {
             } else {
                 sintaxError("Espera-se ',', ';' ou ':'.");
                 consumir(sym.DOIS_PONTOS, sym.PTO_VIRGULA);
+                
             }
         }
     }
