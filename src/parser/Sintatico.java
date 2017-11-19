@@ -19,16 +19,21 @@ import jflex.Token;
 public class Sintatico {
 
     private ArrayList<SintaxError> erros;
+    private ArrayList<Token> tokenIgnorados = new ArrayList<>(); 
     private CustomScanner sc;
     private Token tokenAtual;
-
+    private boolean recuperaErro = false;
+    
+    
     public void consumir() {
         tokenAtual = sc.nextToken();
+        recuperaErro = false;
     }
 
     public void consumir(Integer... tokens) {
         while (!tokenIs(tokens)) {
-            consumir();
+            tokenIgnorados.add(tokenAtual);
+            tokenAtual = sc.nextToken();
         }
     }
 
@@ -79,10 +84,11 @@ public class Sintatico {
             consumir();
         } else {
             sintaxError("Espera-se ponto");
-            return;
         }
         if (tokenIs(sym.EOF)) {
             consumir();
+        }else{
+            sintaxError("Espera-se fim de arquivo");
         }
     }
 
@@ -113,7 +119,11 @@ public class Sintatico {
                     cmd_composto();
                 } else {
                     sintaxError("Espera-se declaração de variaveis, procedimentos ou inicio do bloco de comandos");
-                    consumir(sym.PONTO);
+                    consumir(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER, sym.RSRVDA_PROCEDURE, sym.RSRVDA_BEGIN,sym.PONTO);
+                    if(tokenIs(sym.PONTO)){
+                        return;
+                    }
+                    bloco();
                 }
             }
         }
@@ -617,11 +627,18 @@ public class Sintatico {
     }
 
     private void sintaxError(String msgErro) {
-        if (erros != null) {
+        if (erros != null && recuperaErro==false) {
             erros.add(new SintaxError(tokenAtual.getLinha() + 1,
                     tokenAtual.getColunaInicio(),
                     msgErro));
+            recuperaErro=true;
         }
     }
+
+    public ArrayList<Token> getTokenIgnorados() {
+        return tokenIgnorados;
+    }
+    
+    
 
 }

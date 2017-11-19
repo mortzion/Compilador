@@ -8,6 +8,7 @@ package jflex;
 import java.io.IOException;
 import java.io.StringReader;
 import cup.sym;
+import java.util.Objects;
 
 /**
  *
@@ -131,5 +132,42 @@ public class Token {
     public String toString() {
         return lexema + " -> " + tipo + " " + colunaInicio + " " + colunaFinal + " " + (linha+1) + " " + offset;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Token other = (Token) obj;
+        if (this.tipo != other.tipo) {
+            return false;
+        }
+        if (this.linha != other.linha) {
+            return false;
+        }
+        if (this.colunaInicio != other.colunaInicio) {
+            return false;
+        }
+        if (this.colunaFinal != other.colunaFinal) {
+            return false;
+        }
+        if (this.offset != other.offset) {
+            return false;
+        }
+        if (!Objects.equals(this.lexema, other.lexema)) {
+            return false;
+        }
+        return true;
+    }
+
+    
+    
+    
 
 }

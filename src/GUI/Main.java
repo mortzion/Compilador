@@ -45,12 +45,14 @@ public class Main extends javax.swing.JFrame {
      * Creates new form Main
      */
     private CustomDocumentFilter cdf;
+    private ArrayList<Token> tokensIgnorados;
 
     public Main() {
         initComponents();
         cdf = new CustomDocumentFilter();
         TextLineNumber tln = new TextLineNumber(fonteBox);
         jScrollPane3.setRowHeaderView(tln);
+        this.tokensIgnorados = null;
     }
 
     /**
@@ -219,6 +221,9 @@ public class Main extends javax.swing.JFrame {
         }
         reloadTable(1);
         fillSintaxErrorTable(erros);
+        tokensIgnorados = s.getTokenIgnorados();
+        cdf.updateTextStyles();
+        repaint();
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     public void reloadTable(int type) {
@@ -352,10 +357,9 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTable tokenTable;
     // End of variables declaration//GEN-END:variables
 
-    private final class CustomDocumentFilter extends DocumentFilter {
+    private class CustomDocumentFilter extends DocumentFilter {
 
         private final StyledDocument styledDocument = fonteBox.getStyledDocument();
-
         private final StyleContext styleContext = StyleContext.getDefaultStyleContext();
         private final AttributeSet blueAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.BLUE);
         private final AttributeSet blackAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.BLACK);
@@ -363,7 +367,7 @@ public class Main extends javax.swing.JFrame {
         private final AttributeSet redAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.RED);
         private final AttributeSet pinkAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, new Color(255, 0, 255));
         private final AttributeSet grayAttributeSet = styleContext.addAttribute(styleContext.getEmptySet(), StyleConstants.Foreground, Color.gray);
-
+        
         @Override
         public void insertString(FilterBypass fb, int offset, String text, AttributeSet attributeSet) throws BadLocationException {
             super.insertString(fb, offset, text, attributeSet);
@@ -404,6 +408,7 @@ public class Main extends javax.swing.JFrame {
             a.tokensComentarios(true);
             Token t = null;
 
+                System.out.println(tokenIgnorados.size());
             try {
                 while (true) {
                     Symbol s = a.next_token();
@@ -411,17 +416,23 @@ public class Main extends javax.swing.JFrame {
                     if (t.getTipo() == sym.EOF) {
                         break;
                     }
+                    AttributeSet ts=blackAttributeSet;
                     if (t.getTipo() >= 0 && t.getTipo() <= 16) {
-                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), blueAttributeSet, false);
+                        ts = blueAttributeSet;
                     } else if ((t.getTipo() >= 23 && t.getTipo() <= 34) || t.getTipo() == 38) {
-                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), redAttributeSet, false);
+                        ts = redAttributeSet;
                     } else if (t.getTipo() == 35 || t.getTipo() == 36) {
-                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), pinkAttributeSet, false);
+                        ts = pinkAttributeSet;
                     } else if (t.getTipo() == 37) {
-                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), greenAttributeSet, false);
+                        ts = greenAttributeSet;
                     } else if (t.getTipo() == -3 || t.getTipo() == -4) {
-                        styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(), grayAttributeSet, false);
+                        ts= grayAttributeSet;
                     }
+                    if(tokenIgnorados!=null && tokenIgnorados.contains(t)){
+                        tokenIgnorados.remove(t);
+                        ts = styleContext.addAttribute(ts, StyleConstants.Underline, true);
+                    }
+                    styledDocument.setCharacterAttributes(t.getOffset() - t.getLinha(), t.getLexema().length(),ts, false);
                 }
             } catch (IOException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
