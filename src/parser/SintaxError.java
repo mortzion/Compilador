@@ -12,12 +12,14 @@ package parser;
 public class SintaxError {
     private int linha;
     private int coluna;
+    private int offset;
     private String erro;
 
-    public SintaxError(int linha, int coluna, String erro) {
+    public SintaxError(int linha, int coluna,int offset, String erro) {
         this.linha = linha;
         this.coluna = coluna;
         this.erro = erro;
+        this.offset = offset;
     }
 
     public int getLinha() {
@@ -42,6 +44,10 @@ public class SintaxError {
 
     public void setErro(String erro) {
         this.erro = erro;
+    }
+
+    public int getOffset() {
+        return offset;
     }
     
     

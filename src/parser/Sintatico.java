@@ -31,7 +31,7 @@ public class Sintatico {
     }
 
     public void consumir(Integer... tokens) {
-        while (!tokenIs(tokens)) {
+        while (!tokenIs(tokens) && !tokenIs(sym.EOF)) {
             tokenIgnorados.add(tokenAtual);
             tokenAtual = sc.nextToken();
         }
@@ -237,7 +237,7 @@ public class Sintatico {
         if (tokenIs(sym.RSRVDA_END)) {
             consumir();
         }else{
-            sintaxError("Espera-se begin");
+            sintaxError("Espera-se END");
             consumir(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.PONTO, sym.RSRVDA_END);
         }
     }
@@ -390,14 +390,6 @@ public class Sintatico {
         } else {
             if (tokenIs(sym.RSRVDA_END)) {
                 return;
-            }else{
-                sintaxError("Espera-se ';' ou END");
-                consumir(sym.PTO_VIRGULA, sym.RSRVDA_END);
-                if(tokenIs(sym.PTO_VIRGULA)){
-                    lsta_cmd();
-                }else{
-                    return;
-                }
             }
         }
     }
@@ -586,6 +578,12 @@ public class Sintatico {
             expressao();
             if (tokenIs(sym.FECHA_P)) {
                 consumir();
+            }else{
+                sintaxError("Está faltando ')' na expressão");
+                consumir(sym.OP_DIV, sym.OP_AND, sym.OP_MULT, sym.OP_SOMA, sym.OP_IGUAL, sym.OP_DIFERENTE, 
+                    sym.OP_MENOR_IGUAL, sym.OP_MENOR, sym.OP_MAIOR_IGUAL, sym.OP_MAIOR, 
+                    sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE, 
+                    sym.PTO_VIRGULA, sym.RSRVDA_END);
             }
             return;
         } else if (tokenIs(sym.OP_NOT)) {
@@ -618,6 +616,7 @@ public class Sintatico {
                 return;
             }
         }
+        
     }
 
     //variavel ::= IDENTIFICADOR
@@ -628,9 +627,9 @@ public class Sintatico {
     }
 
     private void sintaxError(String msgErro) {
-        if (erros != null && recuperaErro==false) {
+        if (erros != null) {
             erros.add(new SintaxError(tokenAtual.getLinha() + 1,
-                    tokenAtual.getColunaInicio(),
+                    tokenAtual.getColunaInicio(),tokenAtual.getOffset(),
                     msgErro));
             recuperaErro=true;
         }

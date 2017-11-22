@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java_cup.runtime.Symbol;
 import javax.swing.JFileChooser;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -48,13 +49,18 @@ public class Main extends javax.swing.JFrame {
      */
     private CustomDocumentFilter cdf;
     private ArrayList<Token> tokensIgnorados;
+    private ArrayList<SintaxError> errors;
+    private ArrayList<Token> tokens;
     private int size;
+
     public Main() {
         initComponents();
         cdf = new CustomDocumentFilter();
         TextLineNumber tln = new TextLineNumber(fonteBox);
         jScrollPane3.setRowHeaderView(tln);
         this.tokensIgnorados = null;
+        tokensIgnorados = new ArrayList<>();
+        errors = new ArrayList<>();
     }
 
     /**
@@ -83,95 +89,100 @@ public class Main extends javax.swing.JFrame {
 
         tokenTable.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
         tokenTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-
+        ){
+            public boolean isCellEditable(int row, int column){
+                return false;
             }
-        ));
-        jScrollPane2.setViewportView(tokenTable);
+        }
 
-        jLabel1.setText("Tokens:");
+    );
+    tokenTable.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+            tokenTableMouseClicked(evt);
+        }
+    });
+    jScrollPane2.setViewportView(tokenTable);
 
-        jLabel2.setText("Fonte:");
+    jLabel1.setText("Tokens:");
 
-        fonteBox.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
-        fonteBox.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                fonteBoxKeyReleased(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                fonteBoxKeyTyped(evt);
-            }
-        });
-        jScrollPane3.setViewportView(fonteBox);
+    jLabel2.setText("Fonte:");
 
-        jMenu1.setText("File");
+    fonteBox.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+    fonteBox.addKeyListener(new java.awt.event.KeyAdapter() {
+        public void keyReleased(java.awt.event.KeyEvent evt) {
+            fonteBoxKeyReleased(evt);
+        }
+        public void keyTyped(java.awt.event.KeyEvent evt) {
+            fonteBoxKeyTyped(evt);
+        }
+    });
+    jScrollPane3.setViewportView(fonteBox);
 
-        jMenuItem2.setText("Carregar Fonte");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem2ActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItem2);
+    jMenu1.setText("File");
 
-        jMenuBar1.add(jMenu1);
+    jMenuItem2.setText("Carregar Fonte");
+    jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItem2ActionPerformed(evt);
+        }
+    });
+    jMenu1.add(jMenuItem2);
 
-        jMenu2.setText("Analisador");
+    jMenuBar1.add(jMenu1);
 
-        jMenuItem1.setText("Léxico");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jMenuItem1);
+    jMenu2.setText("Analisador");
 
-        jMenuItem3.setText("Sintatico");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem3ActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jMenuItem3);
+    jMenuItem1.setText("Léxico");
+    jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItem1ActionPerformed(evt);
+        }
+    });
+    jMenu2.add(jMenuItem1);
 
-        jMenuBar1.add(jMenu2);
+    jMenuItem3.setText("Sintatico");
+    jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItem3ActionPerformed(evt);
+        }
+    });
+    jMenu2.add(jMenuItem3);
 
-        setJMenuBar(jMenuBar1);
+    jMenuBar1.add(jMenu2);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane3)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2))
-                        .addGap(0, 816, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+    setJMenuBar(jMenuBar1);
 
-        pack();
+    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+    getContentPane().setLayout(layout);
+    layout.setHorizontalGroup(
+        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addComponent(jScrollPane3)
+                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel1)
+                        .addComponent(jLabel2))
+                    .addGap(0, 816, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING))
+            .addContainerGap())
+    );
+    layout.setVerticalGroup(
+        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(layout.createSequentialGroup()
+            .addGap(10, 10, 10)
+            .addComponent(jLabel2)
+            .addGap(1, 1, 1)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(jLabel1)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
+            .addContainerGap())
+    );
+
+    pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -207,7 +218,7 @@ public class Main extends javax.swing.JFrame {
 
     private void fonteBoxKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fonteBoxKeyReleased
         int newfontSize = fonteBox.getText().length();
-        if(size != newfontSize){
+        if (size != newfontSize) {
             cdf.tokensIgnorados = null;
             size = newfontSize;
         }
@@ -217,26 +228,57 @@ public class Main extends javax.swing.JFrame {
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
 
-        ArrayList<Token> tokens = new ArrayList<>();
-        ArrayList<SintaxError> erros = new ArrayList<>();
+        tokens = new ArrayList<>();
+        errors = new ArrayList<>();
         reloadTable(1);
-        Sintatico s = new Sintatico(new CustomScanner((new StringReader(fonteBox.getText())), tokens), erros);
+        Sintatico s = new Sintatico(new CustomScanner((new StringReader(fonteBox.getText())), tokens), errors);
         try {
             System.out.println(s.start());
         } catch (Exception ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
         reloadTable(1);
-        fillSintaxErrorTable(erros);
+        fillSintaxErrorTable(errors);
         cdf.tokensIgnorados = s.getTokenIgnorados();
         cdf.updateTextStyles();
         repaint();
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
+    private void tokenTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tokenTableMouseClicked
+        if (evt.getClickCount() > 1) {
+            DefaultTableModel dtm = (DefaultTableModel) tokenTable.getModel();
+            int i = tokenTable.getSelectedRow();
+            if (i < 0) {
+                return;
+            }
+
+            if (dtm.getColumnCount() == 3) {
+                fonteBox.setCaretPosition(errors.get(i).getOffset()-errors.get(i).getLinha()+1);
+            } else {
+                Token t = tokens.get(i);
+                int offset;
+                if(t.getOffset()-t.getLinha()+1 > fonteBox.getDocument().getLength()){
+                    offset = fonteBox.getDocument().getLength();
+                }else{
+                    offset = t.getOffset()-t.getLinha()+1;
+                }
+                fonteBox.setCaretPosition(tokens.get(i).getOffset());
+            }
+            fonteBox.requestFocus();
+            repaint();
+        }
+    }//GEN-LAST:event_tokenTableMouseClicked
+
     public void reloadTable(int type) {
         switch (type) {
             case 0: {
-                DefaultTableModel model = new DefaultTableModel(0, 5);
+                DefaultTableModel model = new DefaultTableModel(0, 5) {
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                        return false;
+                    }
+
+                };
                 String[] header = new String[5];
                 header[0] = "Lexema";
                 header[1] = "Tipo";
@@ -250,7 +292,13 @@ public class Main extends javax.swing.JFrame {
                 break;
             }
             case 1: {
-                DefaultTableModel model = new DefaultTableModel(0, 3);
+                DefaultTableModel model = new DefaultTableModel(0, 3){
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                        return false;
+                    }
+                    
+                };
                 String[] header = new String[3];
                 header[0] = "Erro";
                 header[1] = "Linha";
@@ -330,7 +378,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     public ArrayList<Token> getAllTokens() {
-        ArrayList<Token> tokens = new ArrayList<Token>();
+        tokens = new ArrayList<Token>();
 
         AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
         Token atual;
@@ -424,15 +472,15 @@ public class Main extends javax.swing.JFrame {
                         break;
                     }
                     AttributeSet ts = blackAttributeSet;
-                    if (t.getTipo() >= 0 && t.getTipo() <= 16) {
+                    if (t.getTipo() >= 2 && t.getTipo() <= 15) {
                         ts = blueAttributeSet;
-                    } else if ((t.getTipo() >= 23 && t.getTipo() <= 34) || t.getTipo() == 38) {
+                    } else if ((t.getTipo() >= 22 && t.getTipo() <= 34)) {
                         ts = redAttributeSet;
                     } else if (t.getTipo() == 35 || t.getTipo() == 36) {
                         ts = pinkAttributeSet;
                     } else if (t.getTipo() == 37) {
                         ts = greenAttributeSet;
-                    } else if (t.getTipo() == -3 || t.getTipo() == -4) {
+                    } else if (t.getTipo() >= 40 && t.getTipo() <= 42) {
                         ts = grayAttributeSet;
                     }
                     if (tokensIgnorados != null && tokensIgnorados.contains(t)) {

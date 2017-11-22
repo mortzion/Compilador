@@ -16,6 +16,12 @@ import java.util.Objects;
  */
 public class Token {
 
+    public static void main(String[] args){
+        for(int i=0;i<terminalNames.length;i++){
+            System.out.println(i + " - " + terminalNames[i]);
+        }
+    }
+    
     public static final String[] terminalNames = new String[]{
         "EOF",
         "error",
