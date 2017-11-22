@@ -13,27 +13,28 @@ import jflex.CustomScanner;
 import jflex.Token;
 
 /**
- *
  * @author Matheus Prachedes Batista
  */
 public class Sintatico {
 
     private ArrayList<SintaxError> erros;
-    private ArrayList<Token> tokenIgnorados = new ArrayList<>(); 
+    private ArrayList<Token> tokenIgnorados = new ArrayList<>();
     private CustomScanner sc;
     private Token tokenAtual;
-    private boolean recuperaErro = false;
-    
-    
+
     public void consumir() {
         tokenAtual = sc.nextToken();
-        recuperaErro = false;
+        if (tokenAtual.getTipo() >= 41) {
+            lexicalError(tokenAtual);
+            consumir();
+        }
     }
 
     public void consumir(Integer... tokens) {
         while (!tokenIs(tokens) && !tokenIs(sym.EOF)) {
             tokenIgnorados.add(tokenAtual);
-            tokenAtual = sc.nextToken();
+            consumir();
+
         }
     }
 
@@ -87,7 +88,7 @@ public class Sintatico {
         }
         if (tokenIs(sym.EOF)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se fim de arquivo");
         }
     }
@@ -119,8 +120,8 @@ public class Sintatico {
                     cmd_composto();
                 } else {
                     sintaxError("Espera-se declaração de variaveis, procedimentos ou inicio do bloco de comandos");
-                    consumir(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER, sym.RSRVDA_PROCEDURE, sym.RSRVDA_BEGIN,sym.PONTO);
-                    if(tokenIs(sym.PONTO)){
+                    consumir(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER, sym.RSRVDA_PROCEDURE, sym.RSRVDA_BEGIN, sym.PONTO);
+                    if (tokenIs(sym.PONTO)) {
                         return;
                     }
                     bloco();
@@ -140,9 +141,7 @@ public class Sintatico {
             sintaxError("Espera-se ';'");
             consumir(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER, sym.RSRVDA_BEGIN, sym.RSRVDA_PROCEDURE);
         }
-        if (tokenIs(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER, sym.RSRVDA_BEGIN, sym.RSRVDA_PROCEDURE)) {
-            pt2_dec_var2();
-        }
+        pt2_dec_var2();
     }
 
     //pt_dec_var2 ::= pt_dec_var | /**vazio**/;
@@ -151,10 +150,6 @@ public class Sintatico {
             pt_dec_var();
         } else {
             if (tokenIs(sym.RSRVDA_BEGIN, sym.RSRVDA_PROCEDURE)) {
-                return;
-            }else{
-                sintaxError("Espera-se tipo, BEGIN ou PROCEDURE");
-                consumir(sym.RSRVDA_BEGIN, sym.RSRVDA_PROCEDURE);
                 return;
             }
         }
@@ -186,10 +181,6 @@ public class Sintatico {
         } else {
             if (tokenIs(sym.DOIS_PONTOS, sym.PTO_VIRGULA)) {
                 return;
-            } else {
-                sintaxError("Espera-se ',', ';' ou ':'.");
-                consumir(sym.DOIS_PONTOS, sym.PTO_VIRGULA);
-                
             }
         }
     }
@@ -198,8 +189,20 @@ public class Sintatico {
     private void apos_pt_dec_var() {
         if (tokenIs(sym.RSRVDA_PROCEDURE)) {
             pt_dec_sub();
+            if (!tokenIs(sym.RSRVDA_BEGIN)) {
+                sintaxError("Espera-se PROCEDURE ou BEGIN");
+                consumir(sym.PONTO);
+                return;
+            }
+            cmd_composto();
+        } else {
+            if (tokenIs(sym.RSRVDA_BEGIN)) {
+                cmd_composto();
+            } else {
+                sintaxError("Espera-se PROCEDURE ou BEGIN");
+                consumir(sym.PONTO);
+            }
         }
-        cmd_composto();
     }
 
     //pt_dec_sub ::= dec_sub PTO_VIRGULA pt2_dec_sub;
@@ -207,7 +210,7 @@ public class Sintatico {
         dec_sub();
         if (tokenIs(sym.PTO_VIRGULA)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se ';'");
             consumir(sym.RSRVDA_PROCEDURE, sym.RSRVDA_BEGIN);
         }
@@ -218,17 +221,17 @@ public class Sintatico {
     private void cmd_composto() {
         if (tokenIs(sym.RSRVDA_BEGIN)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se begin");
             //FIRST CMD
-            consumir(sym.IDENTIFICADOR, sym.RSRVDA_BEGIN, sym.RSRVDA_WHILE, sym.RSRVDA_IF,sym.RSRVDA_END,sym.PTO_VIRGULA);
+            consumir(sym.IDENTIFICADOR, sym.RSRVDA_BEGIN, sym.RSRVDA_WHILE, sym.RSRVDA_IF, sym.RSRVDA_END, sym.PTO_VIRGULA);
             //Se não encontrou o first do CMD, mas encontrou o follow do lsta_cmd, então consome o end e termina esta regra
-            if(tokenIs(sym.RSRVDA_END)){
+            if (tokenIs(sym.RSRVDA_END)) {
                 consumir();
                 return;
             }
             //Se encontrou o first de lsta_cmd, então consome e continua para a regra cmd
-            if(tokenIs(sym.PTO_VIRGULA)){
+            if (tokenIs(sym.PTO_VIRGULA)) {
                 consumir();
             }
         }
@@ -236,7 +239,7 @@ public class Sintatico {
         lsta_cmd();
         if (tokenIs(sym.RSRVDA_END)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se END");
             consumir(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.PONTO, sym.RSRVDA_END);
         }
@@ -246,10 +249,10 @@ public class Sintatico {
     private void dec_sub() {
         if (tokenIs(sym.RSRVDA_PROCEDURE)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se procedure");
             consumir(sym.IDENTIFICADOR, sym.PTO_VIRGULA, sym.ABRE_P);
-            if(tokenIs(sym.ABRE_P,sym.PTO_VIRGULA)){
+            if (tokenIs(sym.ABRE_P, sym.PTO_VIRGULA)) {
                 dec_sub2();
                 return;
             }
@@ -267,11 +270,24 @@ public class Sintatico {
         }
         if (tokenIs(sym.PTO_VIRGULA)) {
             consumir();
-        }else{
-            sintaxError("Espera-se ';'");
-            consumir(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER, sym.RSRVDA_BEGIN,sym.PTO_VIRGULA);
+        } else {
+            consumir(sym.RSRVDA_VAR,sym.RSRVDA_BEGIN,sym.PTO_VIRGULA);
             if(tokenIs(sym.PTO_VIRGULA)){
-                return;
+                consumir();
+            }
+            if (tokenIs(sym.RSRVDA_VAR)) {
+                prmtrs_formal();
+                if(tokenIs(sym.PTO_VIRGULA)){
+                    consumir();
+                }else{
+                    sintaxError("Espera-se ';'");
+                    consumir(sym.RSRVDA_BEGIN,sym.PTO_VIRGULA);
+                    if(tokenIs(sym.PTO_VIRGULA)){
+                        return;
+                    }
+                }
+            }else{
+                sintaxError("Espera-se ';' ou '('");
             }
         }
         dec_sub3();
@@ -281,22 +297,22 @@ public class Sintatico {
     private void prmtrs_formal() {
         if (tokenIs(sym.ABRE_P)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se '('");
-            consumir(sym.RSRVDA_VAR, sym.IDENTIFICADOR,sym.PTO_VIRGULA, sym.FECHA_P);
-            if(tokenIs(sym.PTO_VIRGULA)){
+            consumir(sym.RSRVDA_VAR, sym.PTO_VIRGULA, sym.FECHA_P);
+            if (tokenIs(sym.PTO_VIRGULA)) {
                 lsta_prmtrs_formal();
             }
-            if(tokenIs(sym.FECHA_P)){
+            if (tokenIs(sym.FECHA_P)) {
                 consumir();
                 return;
-            }
+            } 
         }
         sec_prmtrs_formal();
         lsta_prmtrs_formal();
         if (tokenIs(sym.FECHA_P)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se ')'");
             consumir(sym.PTO_VIRGULA);
         }
@@ -318,15 +334,20 @@ public class Sintatico {
         lsta_id();
         if (tokenIs(sym.DOIS_PONTOS)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espear-se ':'");
-            consumir(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER,sym.PTO_VIRGULA);
-            if(tokenIs(sym.PTO_VIRGULA)){
+            consumir(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER, sym.PTO_VIRGULA);
+            if (tokenIs(sym.PTO_VIRGULA)) {
                 sintaxError("Espera-se um tipo");
                 return;
             }
         }
-        tipo();
+        if(tokenIs(sym.RSRVDA_INTEGER, sym.RSRVDA_BOOLEAN)){
+            tipo();
+        }else{
+            sintaxError("Espera-se boolean ou int");
+            consumir(sym.PTO_VIRGULA, sym.FECHA_P);
+        }
     }
 
     //lsta_prmtrs_formal ::= PTO_VIRGULA sec_prmtrs_formal lsta_prmtrs_formal|vazio;
@@ -348,6 +369,7 @@ public class Sintatico {
             consumir();
         } else {
             sintaxError("Espera-se boolean ou int.");
+            consumir(sym.IDENTIFICADOR, sym.PTO_VIRGULA, sym.FECHA_P);
         }
     }
 
@@ -402,16 +424,16 @@ public class Sintatico {
         expressao();
         if (tokenIs(sym.RSRVDA_THEN)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se THEN");
             consumir(sym.IDENTIFICADOR, sym.RSRVDA_BEGIN, sym.RSRVDA_WHILE, sym.RSRVDA_IF,//first(cmd)
                     sym.RSRVDA_ELSE,//first(cmd_cond2)
                     sym.PTO_VIRGULA, sym.RSRVDA_END);//follow(cmd_condicional);
-            if(tokenIs(sym.RSRVDA_ELSE)){
+            if (tokenIs(sym.RSRVDA_ELSE)) {
                 cmd_condicional2();
                 return;
             }
-            if(tokenIs(sym.PTO_VIRGULA, sym.RSRVDA_END)){
+            if (tokenIs(sym.PTO_VIRGULA, sym.RSRVDA_END)) {
                 return;
             }
         }
@@ -427,11 +449,11 @@ public class Sintatico {
         expressao();
         if (tokenIs(sym.RSRVDA_DO)) {
             consumir();
-        }else{
+        } else {
             sintaxError("Espera-se DO");
             consumir(sym.IDENTIFICADOR, sym.RSRVDA_BEGIN, sym.RSRVDA_WHILE, sym.RSRVDA_IF,//first(cmd)
                     sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END);//follow cmd_repetitivo
-            if(tokenIs(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END)){//se for follow
+            if (tokenIs(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END)) {//se for follow
                 return;
             }
         }
@@ -446,7 +468,7 @@ public class Sintatico {
         } else {
             if (tokenIs(sym.ABRE_P)) {
                 chamada_sub();
-            }else{
+            } else {
                 sintaxError("Espera-se ':=' ou '('");
                 consumir(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END);
             }
@@ -460,10 +482,6 @@ public class Sintatico {
             cmd();
         } else {
             if (tokenIs(sym.PTO_VIRGULA, sym.RSRVDA_END)) {
-                return;
-            }else{
-                sintaxError("Espera-se ELSE, ';' ou END");
-                consumir(sym.PTO_VIRGULA, sym.RSRVDA_END);
                 return;
             }
         }
@@ -487,7 +505,7 @@ public class Sintatico {
             lsta_expressao();
             if (tokenIs(sym.FECHA_P)) {
                 consumir();
-            }else{
+            } else {
                 sintaxError("Espera-se ')'");
                 consumir(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END);
                 return;
@@ -498,7 +516,7 @@ public class Sintatico {
             }
         }
     }
- 
+
     //???????????????????????????????w
     //expressao2 ::= relacao exp_simples | vazio
     private void expressao2() {
@@ -578,23 +596,23 @@ public class Sintatico {
             expressao();
             if (tokenIs(sym.FECHA_P)) {
                 consumir();
-            }else{
+            } else {
                 sintaxError("Está faltando ')' na expressão");
-                consumir(sym.OP_DIV, sym.OP_AND, sym.OP_MULT, sym.OP_SOMA, sym.OP_IGUAL, sym.OP_DIFERENTE, 
-                    sym.OP_MENOR_IGUAL, sym.OP_MENOR, sym.OP_MAIOR_IGUAL, sym.OP_MAIOR, 
-                    sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE, 
-                    sym.PTO_VIRGULA, sym.RSRVDA_END);
+                consumir(sym.OP_DIV, sym.OP_AND, sym.OP_MULT, sym.OP_SOMA, sym.OP_IGUAL, sym.OP_DIFERENTE,
+                        sym.OP_MENOR_IGUAL, sym.OP_MENOR, sym.OP_MAIOR_IGUAL, sym.OP_MAIOR,
+                        sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE,
+                        sym.PTO_VIRGULA, sym.RSRVDA_END);
             }
             return;
         } else if (tokenIs(sym.OP_NOT)) {
             consumir();
             fator();
             return;
-        }else{
+        } else {
             sintaxError("Expressão ilegal, espera-se um identificador, número, '(', NOT, FALSE ou TRUE");
-            consumir(sym.OP_DIV, sym.OP_AND, sym.OP_MULT, sym.OP_SOMA, sym.OP_IGUAL, sym.OP_DIFERENTE, 
-                    sym.OP_MENOR_IGUAL, sym.OP_MENOR, sym.OP_MAIOR_IGUAL, sym.OP_MAIOR, 
-                    sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE, 
+            consumir(sym.OP_DIV, sym.OP_AND, sym.OP_MULT, sym.OP_SOMA, sym.OP_IGUAL, sym.OP_DIFERENTE,
+                    sym.OP_MENOR_IGUAL, sym.OP_MENOR, sym.OP_MAIOR_IGUAL, sym.OP_MAIOR,
+                    sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE,
                     sym.PTO_VIRGULA, sym.RSRVDA_END);
         }
     }
@@ -616,7 +634,7 @@ public class Sintatico {
                 return;
             }
         }
-        
+
     }
 
     //variavel ::= IDENTIFICADOR
@@ -629,16 +647,20 @@ public class Sintatico {
     private void sintaxError(String msgErro) {
         if (erros != null) {
             erros.add(new SintaxError(tokenAtual.getLinha() + 1,
-                    tokenAtual.getColunaInicio(),tokenAtual.getOffset(),
+                    tokenAtual.getColunaInicio(), tokenAtual.getOffset(),
                     msgErro));
-            recuperaErro=true;
         }
     }
 
     public ArrayList<Token> getTokenIgnorados() {
         return tokenIgnorados;
     }
-    
-    
+
+    private void lexicalError(Token tokenAtual) {
+        if (erros != null) {
+            erros.add(new SintaxError(tokenAtual.getLinha() + 1, tokenAtual.getColunaInicio(), tokenAtual.getOffset(),
+                    "Erro léxico: " + tokenAtual.getTokenName()));
+        }
+    }
 
 }

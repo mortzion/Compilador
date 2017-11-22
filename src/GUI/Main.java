@@ -61,6 +61,7 @@ public class Main extends javax.swing.JFrame {
         this.tokensIgnorados = null;
         tokensIgnorados = new ArrayList<>();
         errors = new ArrayList<>();
+        
     }
 
     /**
