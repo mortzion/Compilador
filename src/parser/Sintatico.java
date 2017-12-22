@@ -19,6 +19,7 @@ public class Sintatico {
 
     private ArrayList<SintaxError> erros;
     private ArrayList<Token> tokenIgnorados = new ArrayList<>();
+    private TabelaSimbolos tabela;
     private CustomScanner sc;
     private Token tokenAtual;
 
@@ -42,6 +43,7 @@ public class Sintatico {
         this.sc = sc;
         tokenAtual = sc.nextToken();
         this.erros = erros;
+        this.tabela = new TabelaSimbolos(erros);
     }
 
     public boolean start() {
@@ -69,6 +71,7 @@ public class Sintatico {
             return;
         }
         if (tokenIs(sym.IDENTIFICADOR)) {
+            tabela.addSimbolo(tokenAtual, TabelaSimbolos.CATEGORIA_PROG_NAME, TabelaSimbolos.TIPO_NULL);
             consumir();
         } else {
             programError("identificador");
@@ -157,34 +160,55 @@ public class Sintatico {
 
     //dec_var ::= tipo lsta_id
     private void dec_var() {
-        if (tokenIs(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER)) {
-            consumir();
+        int tipo = tipo();
+        ArrayList<Token> tokens = lsta_id();
+        for (Token t : tokens) {
+            tabela.addSimbolo(t, TabelaSimbolos.CATEGORIA_VAR, tipo);
         }
-        lsta_id();
     }
 
-    //lsta_id ::= IDENTIFICADOR lsta_id2
-    private void lsta_id() {
+    //lsta_id ::= IDENTIFICADOR{,IDENTIFICADOR}
+    private ArrayList<Token> lsta_id() {
+        ArrayList<Token> t = new ArrayList<>();
         if (tokenIs(sym.IDENTIFICADOR)) {
+            t.add(tokenAtual);
             consumir();
         } else {
             sintaxError("Espera-se um identificador");
         }
-        lsta_id2();
-    }
-
-    //lsta_id2 ::= VIRGULA lsta_id | vazio
-    private void lsta_id2() {
-        if (tokenIs(sym.VIRGULA)) {
+        while (tokenIs(sym.VIRGULA)) {
             consumir();
-            lsta_id();
-        } else {
-            if (tokenIs(sym.DOIS_PONTOS, sym.PTO_VIRGULA)) {
-                return;
+            if (tokenIs(sym.IDENTIFICADOR)) {
+                t.add(tokenAtual);
+                consumir();
+            } else {
+                sintaxError("Espera-se um identificador");
             }
         }
+        return t;
     }
 
+//    //lsta_id ::= IDENTIFICADOR lsta_id2
+//    private void lsta_id() {
+//        if (tokenIs(sym.IDENTIFICADOR)) {
+//            consumir();
+//        } else {
+//            sintaxError("Espera-se um identificador");
+//        }
+//        lsta_id2();
+//    }
+//
+//    //lsta_id2 ::= VIRGULA lsta_id | vazio
+//    private void lsta_id2() {
+//        if (tokenIs(sym.VIRGULA)) {
+//            consumir();
+//            lsta_id();
+//        } else {
+//            if (tokenIs(sym.DOIS_PONTOS, sym.PTO_VIRGULA)) {
+//                return;
+//            }
+//        }
+//    }
     //apos_pt_dec_var ::= pt_dec_sub cmd_composto|cmd_composto;
     private void apos_pt_dec_var() {
         if (tokenIs(sym.RSRVDA_PROCEDURE)) {
@@ -258,6 +282,8 @@ public class Sintatico {
             }
         }
         if (tokenIs(sym.IDENTIFICADOR)) {
+            Token t = tokenAtual;
+            tabela.addSimbolo(t, TabelaSimbolos.CATEGORIA_PROC, TabelaSimbolos.TIPO_NULL);
             consumir();
         }
         dec_sub2();
@@ -271,22 +297,22 @@ public class Sintatico {
         if (tokenIs(sym.PTO_VIRGULA)) {
             consumir();
         } else {
-            consumir(sym.RSRVDA_VAR,sym.RSRVDA_BEGIN,sym.PTO_VIRGULA);
-            if(tokenIs(sym.PTO_VIRGULA)){
+            consumir(sym.RSRVDA_VAR, sym.RSRVDA_BEGIN, sym.PTO_VIRGULA);
+            if (tokenIs(sym.PTO_VIRGULA)) {
                 consumir();
             }
             if (tokenIs(sym.RSRVDA_VAR)) {
                 prmtrs_formal();
-                if(tokenIs(sym.PTO_VIRGULA)){
+                if (tokenIs(sym.PTO_VIRGULA)) {
                     consumir();
-                }else{
+                } else {
                     sintaxError("Espera-se ';'");
-                    consumir(sym.RSRVDA_BEGIN,sym.PTO_VIRGULA);
-                    if(tokenIs(sym.PTO_VIRGULA)){
+                    consumir(sym.RSRVDA_BEGIN, sym.PTO_VIRGULA);
+                    if (tokenIs(sym.PTO_VIRGULA)) {
                         return;
                     }
                 }
-            }else{
+            } else {
                 sintaxError("Espera-se ';' ou '('");
             }
         }
@@ -306,7 +332,7 @@ public class Sintatico {
             if (tokenIs(sym.FECHA_P)) {
                 consumir();
                 return;
-            } 
+            }
         }
         sec_prmtrs_formal();
         lsta_prmtrs_formal();
@@ -324,6 +350,7 @@ public class Sintatico {
             pt_dec_var();
         }
         cmd_composto();
+        tabela.removeVarLocaisProcedimento();
     }
 
     //sec_prmtrs_formal ::= RSRVDA_VAR lsta_id DOIS_PONTOS tipo | lsta_id DOIS_PONTOS tipo;
@@ -331,7 +358,8 @@ public class Sintatico {
         if (tokenIs(sym.RSRVDA_VAR)) {
             consumir();
         }
-        lsta_id();
+        ArrayList<Token> ids = lsta_id();
+        int tipo = TabelaSimbolos.TIPO_NULL;
         if (tokenIs(sym.DOIS_PONTOS)) {
             consumir();
         } else {
@@ -342,11 +370,15 @@ public class Sintatico {
                 return;
             }
         }
-        if(tokenIs(sym.RSRVDA_INTEGER, sym.RSRVDA_BOOLEAN)){
-            tipo();
-        }else{
+        if (tokenIs(sym.RSRVDA_INTEGER, sym.RSRVDA_BOOLEAN)) {
+            tipo = tipo();
+        } else {
             sintaxError("Espera-se boolean ou int");
             consumir(sym.PTO_VIRGULA, sym.FECHA_P);
+            return;
+        }
+        for(Token t : ids){
+            tabela.addSimbolo(t, TabelaSimbolos.CATEGORIA_PARA, tipo);
         }
     }
 
@@ -364,13 +396,18 @@ public class Sintatico {
     }
 
     //tipo ::= RSRVDA_BOOLEAN | RSRVDA_INTEGER
-    private void tipo() {
-        if (tokenIs(sym.RSRVDA_BOOLEAN, sym.RSRVDA_INTEGER)) {
+    private int tipo() {
+        if (tokenIs(sym.RSRVDA_BOOLEAN)) {
             consumir();
-        } else {
-            sintaxError("Espera-se boolean ou int.");
-            consumir(sym.IDENTIFICADOR, sym.PTO_VIRGULA, sym.FECHA_P);
+            return TabelaSimbolos.TIPO_BOOLEAN;
         }
+        if (tokenIs(sym.RSRVDA_INTEGER)) {
+            consumir();
+            return TabelaSimbolos.TIPO_INT;
+        }
+        sintaxError("Espera-se boolean ou int.");
+        consumir(sym.IDENTIFICADOR, sym.PTO_VIRGULA, sym.FECHA_P);
+        return TabelaSimbolos.TIPO_NULL;
     }
 
     //pt2_dec_sub ::= pt_dec_sub | /**VAZIO**/;
@@ -387,7 +424,6 @@ public class Sintatico {
     //cmd ::= IDENTIFICADOR cmd2 | cmd_composto | cmd_condicional | cmd_repetitivo;
     private void cmd() {
         if (tokenIs(sym.IDENTIFICADOR)) {
-            consumir();
             cmd2();
         } else {
             if (tokenIs(sym.RSRVDA_BEGIN)) {
@@ -421,7 +457,10 @@ public class Sintatico {
         if (tokenIs(sym.RSRVDA_IF)) {
             consumir();
         }
-        expressao();
+        int tipo = expressao();
+        if(tipo != TabelaSimbolos.TIPO_BOOLEAN){
+            sintaxError("A expressão deve ser do IF deve ser do tipo booleano");
+        }
         if (tokenIs(sym.RSRVDA_THEN)) {
             consumir();
         } else {
@@ -446,7 +485,10 @@ public class Sintatico {
         if (tokenIs(sym.RSRVDA_WHILE)) {
             consumir();
         }
-        expressao();
+        int tipo = expressao();
+        if(tipo != TabelaSimbolos.TIPO_BOOLEAN){
+            sintaxError("A expressão deve ser do WHILE deve ser do tipo booleano");
+        }
         if (tokenIs(sym.RSRVDA_DO)) {
             consumir();
         } else {
@@ -462,12 +504,19 @@ public class Sintatico {
 
     //cmd2 ::= ATRIBUICAO atribuicao | chamada_sub
     private void cmd2() {
+        Token id = tokenAtual;
+        consumir();
         if (tokenIs(sym.ATRIBUIÇÃO)) {
+            int tipo = tabela.buscaSimbolo(id, TabelaSimbolos.CATEGORIA_VAR);
             consumir();
-            atribuicao();
+            int tipo2 = atribuicao();
+            if(tipo != tipo2){
+                sintaxError("Atribuição com tipos conflitantes");
+            }
         } else {
             if (tokenIs(sym.ABRE_P)) {
-                chamada_sub();
+                tabela.buscaSimbolo(id, TabelaSimbolos.CATEGORIA_PROC);
+                chamada_sub(id);
             } else {
                 sintaxError("Espera-se ':=' ou '('");
                 consumir(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END);
@@ -488,21 +537,51 @@ public class Sintatico {
     }
 
     //expressao ::= exp_simples expressao2;
-    private void expressao() {
-        exp_simples();
-        expressao2();
+    private int expressao() {
+        int tipo1 = exp_simples();
+        boolean opEntreInt = false;
+        if (tokenIs(sym.OP_IGUAL, sym.OP_MAIOR, sym.OP_MAIOR_IGUAL, sym.OP_MENOR,
+                sym.OP_MENOR_IGUAL, sym.OP_DIFERENTE)) {
+            if (!tokenIs(sym.OP_IGUAL, sym.OP_DIFERENTE)) {
+                opEntreInt = true;
+            }
+            consumir();
+            int tipo2 = exp_simples();
+            if (tipo1 != tipo2) {
+                sintaxError("Operação de comparação deve ser entre tipos iguais");
+            } else if (opEntreInt && (tipo1 != TabelaSimbolos.TIPO_INT || tipo2 != TabelaSimbolos.TIPO_INT)) {
+                sintaxError("Operação de comparação deve ser entre tipos inteiros");
+            }
+            return TabelaSimbolos.TIPO_BOOLEAN;
+        }
+        return tipo1;
     }
 
+//    //???????????????????????????????w
+//    //expressao2 ::= relacao exp_simples | vazio
+//    private void expressao2() {
+//        if (tokenIs(sym.OP_IGUAL, sym.OP_MAIOR, sym.OP_MAIOR_IGUAL, sym.OP_MENOR,
+//                sym.OP_MENOR_IGUAL, sym.OP_DIFERENTE)) {
+//            consumir();
+//            exp_simples();
+//        } else {
+//            if (tokenIs(sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN,
+//                    sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END)) {
+//                return;
+//            }
+//        }
+//    }
     //atribuicao ::= expressao
-    private void atribuicao() {
-        expressao();
+    private int atribuicao() {
+        return expressao();
     }
 
     //chamada_sub ::= ABRE_P lsta_expressao FECHA_P |
-    private void chamada_sub() {
+    private void chamada_sub(Token idProcedimento) {
         if (tokenIs(sym.ABRE_P)) {
             consumir();
-            lsta_expressao();
+            ArrayList<Integer> tipos = lsta_expressao();
+            tabela.parametrosChamadaProcedimento(tipos, idProcedimento);
             if (tokenIs(sym.FECHA_P)) {
                 consumir();
             } else {
@@ -517,83 +596,132 @@ public class Sintatico {
         }
     }
 
-    //???????????????????????????????w
-    //expressao2 ::= relacao exp_simples | vazio
-    private void expressao2() {
-        if (tokenIs(sym.OP_IGUAL, sym.OP_MAIOR, sym.OP_MAIOR_IGUAL, sym.OP_MENOR,
-                sym.OP_MENOR_IGUAL, sym.OP_DIFERENTE)) {
-            consumir();
-            exp_simples();
-        } else {
-            if (tokenIs(sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN,
-                    sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END)) {
-                return;
-            }
-        }
-    }
-
     //exp_simples ::= OP_SOMA termo lista_exp_simples | OP_SUB termo lista_exp_simples  | termo lista_exp_simples;
-    private void exp_simples() {
+    private int exp_simples() {
+        boolean sinal = false;
         if (tokenIs(sym.OP_SOMA, sym.OP_SUB)) {
             consumir();
+            sinal = true;
         }
-        termo();
-        lista_exp_simples();
+        int tipo1 = termo();
+        int tipoOp;
+        int tipo2;
+        while (tokenIs(sym.OP_SOMA, sym.OP_SUB, sym.OP_OR)) {
+            if (tokenIs(sym.OP_OR)) {
+                tipoOp = TabelaSimbolos.TIPO_BOOLEAN;
+            } else {
+                tipoOp = TabelaSimbolos.TIPO_INT;
+            }
+            consumir();
+            tipo2 = termo();
+            if (tipo1 != tipo2 && tipo1 != tipoOp) {
+                if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
+                    sintaxError("Operação OR apenas entre boleanos");
+                } else {
+                    sintaxError("Operação númerica apenas entre números inteiros");
+                }
+            }
+        }
+        return tipo1;
     }
 
+//    //lista_exp_simples ::= OP_SOMA termo lista_exp_simples | OP_SUB termo lista_exp_simples |
+//    //OP_OR termo lista_exp_simples| /**vazio**/;
+//    private void lista_exp_simples() {
+//        if (tokenIs(sym.OP_SOMA, sym.OP_SUB, sym.OP_OR)) {
+//            consumir();
+//            termo();
+//            lista_exp_simples();
+//        } else {
+//            if (tokenIs(sym.OP_IGUAL, sym.OP_DIFERENTE, sym.OP_MENOR_IGUAL,
+//                    sym.OP_MENOR, sym.OP_MAIOR_IGUAL, sym.OP_MAIOR, sym.VIRGULA,
+//                    sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE,
+//                    sym.PTO_VIRGULA, sym.RSRVDA_END)) {
+//                return;
+//            }
+//        }
+//    }
     //lsta_expressao ::= expressao lsta_expressao2;
-    private void lsta_expressao() {
-        expressao();
-        lsta_expressao2();
+    private ArrayList<Integer> lsta_expressao() {
+        ArrayList<Integer> tipos = new ArrayList<>();
+        tipos.add(expressao());
+        while (tokenIs(sym.VIRGULA)) {
+            consumir();
+            tipos.add(expressao());
+        }
+        return tipos;
     }
 
+//      //lsta_expressao2 ::= VIRGULA expressao lsta_expressao2 | /*vazio*/ ;
+//    private void lsta_expressao2() {
+//        if (tokenIs(sym.VIRGULA)) {
+//            consumir();
+//            expressao();
+//            lsta_expressao2();
+//        } else {
+//            if (tokenIs(sym.FECHA_P)) {
+//                return;
+//            }
+//        }
+//    }
     //termo ::= fator lista_termo;
-    private void termo() {
-        fator();
-        lista_termo();
-    }
-
-    //lista_exp_simples ::= OP_SOMA termo lista_exp_simples | OP_SUB termo lista_exp_simples |
-    //OP_OR termo lista_exp_simples| /**vazio**/;
-    private void lista_exp_simples() {
-        if (tokenIs(sym.OP_SOMA, sym.OP_SUB, sym.OP_OR)) {
+    private int termo() {
+        int tipo1 = fator();
+        int tipoOp;
+        int tipo2;
+        while (tokenIs(sym.OP_DIV, sym.OP_AND, sym.OP_MULT)) {
+            if (tokenIs(sym.OP_AND)) {
+                tipoOp = TabelaSimbolos.TIPO_BOOLEAN;
+            } else {
+                tipoOp = TabelaSimbolos.TIPO_INT;
+            }
             consumir();
-            termo();
-            lista_exp_simples();
-        } else {
-            if (tokenIs(sym.OP_IGUAL, sym.OP_DIFERENTE, sym.OP_MENOR_IGUAL,
-                    sym.OP_MENOR, sym.OP_MAIOR_IGUAL, sym.OP_MAIOR, sym.VIRGULA,
-                    sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE,
-                    sym.PTO_VIRGULA, sym.RSRVDA_END)) {
-                return;
+            tipo2 = fator();
+            if (tipo1 != tipo2 && tipo1 != tipoOp) {
+                if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
+                    sintaxError("Operação AND deve ser entre boleanos");
+                } else {
+                    sintaxError("Operação númerica deve ser entre números inteiros");
+                }
             }
         }
+        return tipo1;
     }
 
-    //lsta_expressao2 ::= VIRGULA expressao lsta_expressao2 | /*vazio*/ ;
-    private void lsta_expressao2() {
-        if (tokenIs(sym.VIRGULA)) {
-            consumir();
-            expressao();
-            lsta_expressao2();
-        } else {
-            if (tokenIs(sym.FECHA_P)) {
-                return;
-            }
-        }
-    }
-
+//    //lista_termo ::= OP_DIV fator lista_termo | OP_AND fator lista_termo |
+//    //OP_MULT fator lista_termo|/**vazio**/;
+//    private void lista_termo() {
+//        if (tokenIs(sym.OP_DIV, sym.OP_AND, sym.OP_MULT)) {
+//            consumir();
+//            fator();
+//            lista_termo();
+//            return;
+//        } else {
+//            if (tokenIs(sym.OP_SOMA, sym.OP_SUB, sym.OP_OR, sym.OP_IGUAL,
+//                    sym.OP_DIFERENTE, sym.OP_MENOR_IGUAL, sym.OP_MENOR,
+//                    sym.OP_MAIOR_IGUAL, sym.OP_MAIOR, sym.VIRGULA, sym.FECHA_P,
+//                    sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE, sym.PTO_VIRGULA,
+//                    sym.RSRVDA_END)) {
+//                return;
+//            }
+//        }
+//
+//    }
     //fator ::= variavel | NUM_INTEIRO | ABRE_P expressao FECHA_P | OP_NOT fator|
     //RSRVDA_FALSE | RSRVDA_TRUE
-    private void fator() {
+    private int fator() {
+        int tipo = TabelaSimbolos.TIPO_NULL;
         if (tokenIs(sym.IDENTIFICADOR)) {
-            variavel();
-        } else if (tokenIs(sym.NUM_INTEIRO, sym.RSRVDA_FALSE, sym.RSRVDA_TRUE)) {
+            tipo = variavel();
+        } else if (tokenIs(sym.NUM_INTEIRO)) {
+            tipo = TabelaSimbolos.TIPO_INT;
             consumir();
-            return;
+        } else if (tokenIs(sym.RSRVDA_FALSE, sym.RSRVDA_TRUE)) {
+            tipo = TabelaSimbolos.TIPO_BOOLEAN;
+            consumir();
         } else if (tokenIs(sym.ABRE_P)) {
             consumir();
-            expressao();
+            tipo = expressao();
             if (tokenIs(sym.FECHA_P)) {
                 consumir();
             } else {
@@ -603,11 +731,13 @@ public class Sintatico {
                         sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE,
                         sym.PTO_VIRGULA, sym.RSRVDA_END);
             }
-            return;
-        } else if (tokenIs(sym.OP_NOT)) {
+        } else if (tokenIs(sym.OP_NOT)) {//OPERAção entre tipos está certo?-------------------------------------------
             consumir();
-            fator();
-            return;
+            tipo = fator();
+            if (tipo != TabelaSimbolos.TIPO_BOOLEAN) {
+                sintaxError("Operação NOT com um valor não boleano");
+                tipo = TabelaSimbolos.TIPO_BOOLEAN;
+            }
         } else {
             sintaxError("Expressão ilegal, espera-se um identificador, número, '(', NOT, FALSE ou TRUE");
             consumir(sym.OP_DIV, sym.OP_AND, sym.OP_MULT, sym.OP_SOMA, sym.OP_IGUAL, sym.OP_DIFERENTE,
@@ -615,33 +745,17 @@ public class Sintatico {
                     sym.VIRGULA, sym.FECHA_P, sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE,
                     sym.PTO_VIRGULA, sym.RSRVDA_END);
         }
-    }
-
-    //lista_termo ::= OP_DIV fator lista_termo | OP_AND fator lista_termo |
-    //OP_MULT fator lista_termo|/**vazio**/;
-    private void lista_termo() {
-        if (tokenIs(sym.OP_DIV, sym.OP_AND, sym.OP_MULT)) {
-            consumir();
-            fator();
-            lista_termo();
-            return;
-        } else {
-            if (tokenIs(sym.OP_SOMA, sym.OP_SUB, sym.OP_OR, sym.OP_IGUAL,
-                    sym.OP_DIFERENTE, sym.OP_MENOR_IGUAL, sym.OP_MENOR,
-                    sym.OP_MAIOR_IGUAL, sym.OP_MAIOR, sym.VIRGULA, sym.FECHA_P,
-                    sym.RSRVDA_DO, sym.RSRVDA_THEN, sym.RSRVDA_ELSE, sym.PTO_VIRGULA,
-                    sym.RSRVDA_END)) {
-                return;
-            }
-        }
-
+        return tipo;
     }
 
     //variavel ::= IDENTIFICADOR
-    private void variavel() {
+    private int variavel() {
+        int tipo = TabelaSimbolos.TIPO_NULL;
         if (tokenIs(sym.IDENTIFICADOR)) {
+            tipo = tabela.buscaSimbolo(tokenAtual, TabelaSimbolos.CATEGORIA_VAR);
             consumir();
         }
+        return tipo;
     }
 
     private void sintaxError(String msgErro) {
@@ -661,6 +775,5 @@ public class Sintatico {
             erros.add(new SintaxError(tokenAtual.getLinha() + 1, tokenAtual.getColunaInicio(), tokenAtual.getOffset(),
                     "Erro léxico: " + tokenAtual.getTokenName()));
         }
-    }
-
+    }   
 }

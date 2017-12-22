@@ -379,7 +379,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     public ArrayList<Token> getAllTokens() {
-        tokens = new ArrayList<Token>();
+        tokens = new ArrayList<>();
 
         AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
         Token atual;
@@ -464,7 +464,7 @@ public class Main extends javax.swing.JFrame {
             AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
             a.tokensComentarios(true);
             Token t = null;
-            ArrayList<Token> copiaTokens = tokensIgnorados != null ? (ArrayList<Token>) tokensIgnorados.clone() : null;
+            ArrayList<Token> copiaTokens = (tokensIgnorados != null ?(ArrayList<Token>)tokensIgnorados.clone() : null);
             try {
                 while (true) {
                     Symbol s = a.next_token();
