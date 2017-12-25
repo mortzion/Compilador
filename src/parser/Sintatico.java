@@ -19,6 +19,7 @@ public class Sintatico {
 
     private ArrayList<SintaxError> erros;
     private ArrayList<Token> tokenIgnorados = new ArrayList<>();
+    private LinguagemMaquina lMaquina = new LinguagemMaquina();
     private TabelaSimbolos tabela;
     private CustomScanner sc;
     private Token tokenAtual;
@@ -48,6 +49,7 @@ public class Sintatico {
 
     public boolean start() {
         program();
+        System.out.println(lMaquina.toString());
         return tokenAtual.getTipo() == sym.EOF;
     }
 
@@ -64,6 +66,7 @@ public class Sintatico {
 
     //RSRVDA_PROGRAM ::= RSRVDA_PGORAM IDENTIFICADOR PTO_VIRGULA bloco PONTO
     private void program() {
+        this.lMaquina.addInstrucao(LinguagemMaquina.INICIO_PROGRAMA, null);
         if (tokenIs(sym.RSRVDA_PROGRAM)) {
             consumir();
         } else {
@@ -94,6 +97,10 @@ public class Sintatico {
         } else {
             sintaxError("Espera-se fim de arquivo");
         }
+        for (int i = 0; i < tabela.getNumVariaveis(); i++) {
+            lMaquina.addInstrucao(LinguagemMaquina.DESALLOCA_MEMORIA, 1);
+        }
+        lMaquina.addInstrucao(LinguagemMaquina.PARA, null);
     }
 
     private void programError(String msg) {
@@ -163,7 +170,10 @@ public class Sintatico {
         int tipo = tipo();
         ArrayList<Token> tokens = lsta_id();
         for (Token t : tokens) {
-            tabela.addSimbolo(t, TabelaSimbolos.CATEGORIA_VAR, tipo);
+            boolean jaDeclarado = tabela.addSimbolo(t, TabelaSimbolos.CATEGORIA_VAR, tipo);
+            if (!jaDeclarado) {
+                lMaquina.addInstrucao(LinguagemMaquina.ALLOCA_MEMORIA, 1);
+            }
         }
     }
 
@@ -377,7 +387,7 @@ public class Sintatico {
             consumir(sym.PTO_VIRGULA, sym.FECHA_P);
             return;
         }
-        for(Token t : ids){
+        for (Token t : ids) {
             tabela.addSimbolo(t, TabelaSimbolos.CATEGORIA_PARA, tipo);
         }
     }
@@ -458,7 +468,9 @@ public class Sintatico {
             consumir();
         }
         int tipo = expressao();
-        if(tipo != TabelaSimbolos.TIPO_BOOLEAN){
+        int endereco = lMaquina.getEnderecoAtual();
+        lMaquina.addInstrucao(LinguagemMaquina.DESVIO_FALSE, null);
+        if (tipo != TabelaSimbolos.TIPO_BOOLEAN) {
             sintaxError("A expressão deve ser do IF deve ser do tipo booleano");
         }
         if (tokenIs(sym.RSRVDA_THEN)) {
@@ -477,18 +489,40 @@ public class Sintatico {
             }
         }
         cmd();
+        lMaquina.addInstrucao(endereco, LinguagemMaquina.DESVIO_FALSE, lMaquina.getEnderecoAtual()+1);
         cmd_condicional2();
     }
 
+    //cmd_condicional2 ::= RSRVDA_ELSE cmd | vazio
+    private void cmd_condicional2() {
+        if (tokenIs(sym.RSRVDA_ELSE)) {
+            int enderecoJumpTrue = lMaquina.getEnderecoAtual();
+            lMaquina.addInstrucao(LinguagemMaquina.DESVIO_SEMPRE, null);
+            lMaquina.addInstrucao(LinguagemMaquina.NADA, null);
+            consumir();
+            cmd();
+            lMaquina.addInstrucao(enderecoJumpTrue, LinguagemMaquina.DESVIO_SEMPRE, lMaquina.getEnderecoAtual());
+            lMaquina.addInstrucao(LinguagemMaquina.NADA, null);
+        } else {
+            if (tokenIs(sym.PTO_VIRGULA, sym.RSRVDA_END)) {
+                return;
+            }
+        }
+    }
+    
     //cmd_repetitivo ::= RSRVDA_WHILE expressao RSRVDA_DO cmd;
     private void cmd_repetitivo() {
         if (tokenIs(sym.RSRVDA_WHILE)) {
             consumir();
         }
+        int enderecoJumpBack = lMaquina.getEnderecoAtual();
+        lMaquina.addInstrucao(LinguagemMaquina.NADA, null);
         int tipo = expressao();
-        if(tipo != TabelaSimbolos.TIPO_BOOLEAN){
+        if (tipo != TabelaSimbolos.TIPO_BOOLEAN) {
             sintaxError("A expressão deve ser do WHILE deve ser do tipo booleano");
         }
+        int enderecoEndLoop = lMaquina.getEnderecoAtual();
+        lMaquina.addInstrucao(LinguagemMaquina.DESVIO_FALSE, null);
         if (tokenIs(sym.RSRVDA_DO)) {
             consumir();
         } else {
@@ -500,6 +534,9 @@ public class Sintatico {
             }
         }
         cmd();
+        lMaquina.addInstrucao(LinguagemMaquina.DESVIO_SEMPRE, enderecoJumpBack);
+        lMaquina.addInstrucao(enderecoEndLoop, LinguagemMaquina.DESVIO_FALSE, lMaquina.getEnderecoAtual());
+        lMaquina.addInstrucao(LinguagemMaquina.NADA, null);
     }
 
     //cmd2 ::= ATRIBUICAO atribuicao | chamada_sub
@@ -510,13 +547,18 @@ public class Sintatico {
             int tipo = tabela.buscaSimbolo(id, TabelaSimbolos.CATEGORIA_VAR);
             consumir();
             int tipo2 = atribuicao();
-            if(tipo != tipo2){
+            lMaquina.addInstrucao(LinguagemMaquina.ARMAZENA, tabela.enderecoSimbolo(id));
+            if (tipo != tipo2) {
                 sintaxError("Atribuição com tipos conflitantes");
             }
         } else {
             if (tokenIs(sym.ABRE_P)) {
                 tabela.buscaSimbolo(id, TabelaSimbolos.CATEGORIA_PROC);
-                chamada_sub(id);
+                if (id.getLexema().equals("read")) {
+                    chamada_sub_read(id);
+                } else {
+                    chamada_sub(id);
+                }
             } else {
                 sintaxError("Espera-se ':=' ou '('");
                 consumir(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END);
@@ -524,17 +566,7 @@ public class Sintatico {
         }
     }
 
-    //cmd_condicional2 ::= RSRVDA_ELSE cmd | vazio
-    private void cmd_condicional2() {
-        if (tokenIs(sym.RSRVDA_ELSE)) {
-            consumir();
-            cmd();
-        } else {
-            if (tokenIs(sym.PTO_VIRGULA, sym.RSRVDA_END)) {
-                return;
-            }
-        }
-    }
+    
 
     //expressao ::= exp_simples expressao2;
     private int expressao() {
@@ -542,11 +574,32 @@ public class Sintatico {
         boolean opEntreInt = false;
         if (tokenIs(sym.OP_IGUAL, sym.OP_MAIOR, sym.OP_MAIOR_IGUAL, sym.OP_MENOR,
                 sym.OP_MENOR_IGUAL, sym.OP_DIFERENTE)) {
+            Token t = tokenAtual;
             if (!tokenIs(sym.OP_IGUAL, sym.OP_DIFERENTE)) {
                 opEntreInt = true;
             }
             consumir();
             int tipo2 = exp_simples();
+            switch (t.getTipo()) {
+                case sym.OP_IGUAL:
+                    lMaquina.addInstrucao(LinguagemMaquina.COMAPRA_SE_IGUAL, null);
+                    break;
+                case sym.OP_DIFERENTE:
+                    lMaquina.addInstrucao(LinguagemMaquina.COMPARA_SE_DESIGUAL, null);
+                    break;
+                case sym.OP_MAIOR:
+                    lMaquina.addInstrucao(LinguagemMaquina.COMPARA_SE_MAIOR, null);
+                    break;
+                case sym.OP_MAIOR_IGUAL:
+                    lMaquina.addInstrucao(LinguagemMaquina.COMPARA_SE_MAIOR_IGUAL, null);
+                    break;
+                case sym.OP_MENOR:
+                    lMaquina.addInstrucao(LinguagemMaquina.COMPARA_SE_MENOR, null);
+                    break;
+                case sym.OP_MENOR_IGUAL:
+                    lMaquina.addInstrucao(LinguagemMaquina.COMPARA_SE_MENOR_IGUAL, null);
+                    break;
+            }
             if (tipo1 != tipo2) {
                 sintaxError("Operação de comparação deve ser entre tipos iguais");
             } else if (opEntreInt && (tipo1 != TabelaSimbolos.TIPO_INT || tipo2 != TabelaSimbolos.TIPO_INT)) {
@@ -573,15 +626,56 @@ public class Sintatico {
 //    }
     //atribuicao ::= expressao
     private int atribuicao() {
-        return expressao();
+        int tipo = expressao();
+        return tipo;
     }
 
     //chamada_sub ::= ABRE_P lsta_expressao FECHA_P |
     private void chamada_sub(Token idProcedimento) {
         if (tokenIs(sym.ABRE_P)) {
             consumir();
-            ArrayList<Integer> tipos = lsta_expressao();
+            ArrayList<Integer> tipos = lsta_expressao(idProcedimento.getLexema().equals("write"));
             tabela.parametrosChamadaProcedimento(tipos, idProcedimento);
+            if (tokenIs(sym.FECHA_P)) {
+                consumir();
+            } else {
+                sintaxError("Espera-se ')'");
+                consumir(sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END);
+                return;
+            }
+        } else {
+            if (tokenIs(sym.RSRVDA_ELSE, sym.RSRVDA_END, sym.PTO_VIRGULA)) {
+                return;
+            }
+        }
+    }
+
+    private void chamada_sub_read(Token idProcedimento) {
+        if (tokenIs(sym.ABRE_P)) {
+            consumir();
+            ArrayList<Integer> tipos = new ArrayList<>();
+            if (tokenIs(sym.IDENTIFICADOR)) {
+                lMaquina.addInstrucao(LinguagemMaquina.LEITURA, null);
+                lMaquina.addInstrucao(LinguagemMaquina.ARMAZENA, tabela.enderecoSimbolo(tokenAtual));
+                tipos.add(tabela.buscaSimbolo(tokenAtual, TabelaSimbolos.CATEGORIA_VAR));
+                consumir();
+                while (tokenIs(sym.VIRGULA)) {
+                    consumir();
+                    if (tokenIs(sym.IDENTIFICADOR)) {
+                        lMaquina.addInstrucao(LinguagemMaquina.LEITURA, null);
+                        lMaquina.addInstrucao(LinguagemMaquina.ARMAZENA, tabela.enderecoSimbolo(tokenAtual));
+                        tipos.add(tabela.buscaSimbolo(tokenAtual, TabelaSimbolos.CATEGORIA_VAR));
+                        consumir();
+                    } else {
+                        sintaxError("Espera-se um identificador");
+                        consumir(sym.FECHA_P, sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END);
+                    }
+                }
+                tabela.parametrosChamadaProcedimento(tipos, idProcedimento);
+            } else {
+                sintaxError("Espera-se um identificador");
+                consumir(sym.FECHA_P, sym.RSRVDA_ELSE, sym.PTO_VIRGULA, sym.RSRVDA_END);
+            }
             if (tokenIs(sym.FECHA_P)) {
                 consumir();
             } else {
@@ -601,12 +695,18 @@ public class Sintatico {
         boolean sinal = false;
         if (tokenIs(sym.OP_SOMA, sym.OP_SUB)) {
             consumir();
-            sinal = true;
+            if (tokenIs(sym.OP_SUB)) {
+                sinal = true;
+            }
         }
         int tipo1 = termo();
+        if (sinal) {
+            lMaquina.addInstrucao(LinguagemMaquina.INVERTE, null);
+        }
         int tipoOp;
         int tipo2;
         while (tokenIs(sym.OP_SOMA, sym.OP_SUB, sym.OP_OR)) {
+            Token t = tokenAtual;
             if (tokenIs(sym.OP_OR)) {
                 tipoOp = TabelaSimbolos.TIPO_BOOLEAN;
             } else {
@@ -614,6 +714,19 @@ public class Sintatico {
             }
             consumir();
             tipo2 = termo();
+
+            switch (t.getTipo()) {
+                case sym.OP_SOMA:
+                    lMaquina.addInstrucao(LinguagemMaquina.SOMA, null);
+                    break;
+                case sym.OP_SUB:
+                    lMaquina.addInstrucao(LinguagemMaquina.SUB, null);
+                    break;
+                case sym.OP_OR:
+                    lMaquina.addInstrucao(LinguagemMaquina.SOMA, null);
+                    break;
+            }
+
             if (tipo1 != tipo2 && tipo1 != tipoOp) {
                 if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
                     sintaxError("Operação OR apenas entre boleanos");
@@ -642,12 +755,18 @@ public class Sintatico {
 //        }
 //    }
     //lsta_expressao ::= expressao lsta_expressao2;
-    private ArrayList<Integer> lsta_expressao() {
+    private ArrayList<Integer> lsta_expressao(boolean isWrite) {
         ArrayList<Integer> tipos = new ArrayList<>();
         tipos.add(expressao());
+        if (isWrite) {
+            lMaquina.addInstrucao(LinguagemMaquina.IMPRIME, null);
+        }
         while (tokenIs(sym.VIRGULA)) {
             consumir();
             tipos.add(expressao());
+            if (isWrite) {
+                lMaquina.addInstrucao(LinguagemMaquina.IMPRIME, null);
+            }
         }
         return tipos;
     }
@@ -670,6 +789,7 @@ public class Sintatico {
         int tipoOp;
         int tipo2;
         while (tokenIs(sym.OP_DIV, sym.OP_AND, sym.OP_MULT)) {
+            Token t = tokenAtual;
             if (tokenIs(sym.OP_AND)) {
                 tipoOp = TabelaSimbolos.TIPO_BOOLEAN;
             } else {
@@ -677,6 +797,21 @@ public class Sintatico {
             }
             consumir();
             tipo2 = fator();
+
+            switch (t.getTipo()) {
+                case sym.OP_DIV:
+                    lMaquina.addInstrucao(LinguagemMaquina.DIV, null);
+                    break;
+                case sym.OP_AND:
+                    lMaquina.addInstrucao(LinguagemMaquina.AND, null);
+                    break;
+                case sym.OP_MULT:
+                    lMaquina.addInstrucao(LinguagemMaquina.MULT, null);
+                    break;
+                default:
+                    break;
+            }
+
             if (tipo1 != tipo2 && tipo1 != tipoOp) {
                 if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
                     sintaxError("Operação AND deve ser entre boleanos");
@@ -715,8 +850,14 @@ public class Sintatico {
             tipo = variavel();
         } else if (tokenIs(sym.NUM_INTEIRO)) {
             tipo = TabelaSimbolos.TIPO_INT;
+            lMaquina.addInstrucao(LinguagemMaquina.CARREGA_CONSTANTE, Integer.valueOf(tokenAtual.getLexema()));
             consumir();
         } else if (tokenIs(sym.RSRVDA_FALSE, sym.RSRVDA_TRUE)) {
+            if (tokenIs(sym.RSRVDA_FALSE)) {
+                lMaquina.addInstrucao(LinguagemMaquina.CARREGA_CONSTANTE, 0);
+            } else {
+                lMaquina.addInstrucao(LinguagemMaquina.CARREGA_CONSTANTE, 1);
+            }
             tipo = TabelaSimbolos.TIPO_BOOLEAN;
             consumir();
         } else if (tokenIs(sym.ABRE_P)) {
@@ -734,6 +875,7 @@ public class Sintatico {
         } else if (tokenIs(sym.OP_NOT)) {//OPERAção entre tipos está certo?-------------------------------------------
             consumir();
             tipo = fator();
+            lMaquina.addInstrucao(LinguagemMaquina.NOT, null);
             if (tipo != TabelaSimbolos.TIPO_BOOLEAN) {
                 sintaxError("Operação NOT com um valor não boleano");
                 tipo = TabelaSimbolos.TIPO_BOOLEAN;
@@ -753,6 +895,7 @@ public class Sintatico {
         int tipo = TabelaSimbolos.TIPO_NULL;
         if (tokenIs(sym.IDENTIFICADOR)) {
             tipo = tabela.buscaSimbolo(tokenAtual, TabelaSimbolos.CATEGORIA_VAR);
+            lMaquina.addInstrucao(LinguagemMaquina.CARREGA_VALOR, tabela.enderecoSimbolo(tokenAtual));
             consumir();
         }
         return tipo;
@@ -775,5 +918,5 @@ public class Sintatico {
             erros.add(new SintaxError(tokenAtual.getLinha() + 1, tokenAtual.getColunaInicio(), tokenAtual.getOffset(),
                     "Erro léxico: " + tokenAtual.getTokenName()));
         }
-    }   
+    }
 }

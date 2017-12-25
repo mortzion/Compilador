@@ -19,6 +19,8 @@ import jflex.Token;
  */
 public class TabelaSimbolos {
 
+    public static final int VARIAVEL_NAO_ENCONTRADA = -1;
+    
     public static final int CATEGORIA_VAR = 1;//Simbolos que representam variaveis
     public static final int CATEGORIA_PROC = 2;//Simbolos que representam nome de procedimentos
     public static final int CATEGORIA_PARA = 3;//Simbolos que representam variaveis de parametro
@@ -34,13 +36,14 @@ public class TabelaSimbolos {
     private ArrayList<LinkedHashMap<KeyTabelaSimbolos, ValueTabelaSimbolos>> tabelasProcedimentos;
     private LinkedHashMap<KeyTabelaSimbolos, ValueTabelaSimbolos> procedimento;
     private ArrayList<SintaxError> erros;
-
+    private int enderecoAtual;
+    
     public TabelaSimbolos(ArrayList<SintaxError> erros) {
         this.tabelaSimbolosGlobal = new HashMap();
         this.tabelasProcedimentos = new ArrayList();
         procedimento = null;
         this.erros = erros;
-
+        this.enderecoAtual = 0;
         init();
     }
 
@@ -51,19 +54,21 @@ public class TabelaSimbolos {
         tabelaSimbolosGlobal.put(write.getKey(), write);
     }
 
-    public void addSimbolo(Token t, int categoria, int tipo) {
-        ValueTabelaSimbolos v = new ValueTabelaSimbolos(t, categoria, tipo);
+    public boolean addSimbolo(Token t, int categoria, int tipo) {
+        boolean erro = false;
+        ValueTabelaSimbolos v = new ValueTabelaSimbolos(t, categoria, tipo,enderecoAtual);
         KeyTabelaSimbolos k = v.getKey();
         if (procedimento != null) {
             if (procedimento.containsKey(k)) {
                 erros.add(new SintaxError(t.getLinha(), t.getColunaInicio(), t.getOffset(), getMsgErroAdd(categoria)));
+                erro = true;
             } else {
                 procedimento.put(k, v);
             }
-            return;
         } else {
             if (tabelaSimbolosGlobal.containsKey(k)) {
                 erros.add(new SintaxError(t.getLinha(), t.getColunaInicio(), t.getOffset(), getMsgErroAdd(categoria)));
+                erro = true;
             } else {
                 if (categoria == CATEGORIA_PROC) {
                     v.tipo = tabelasProcedimentos.size();
@@ -73,10 +78,14 @@ public class TabelaSimbolos {
                 tabelaSimbolosGlobal.put(k, v);
             }
         }
+        if(categoria == CATEGORIA_VAR){
+            enderecoAtual++;
+        }
+        return erro;
     }
 
     public int buscaSimbolo(Token t, int categoria) {
-        ValueTabelaSimbolos v = new ValueTabelaSimbolos(t, categoria, TIPO_NULL);
+        ValueTabelaSimbolos v = new ValueTabelaSimbolos(t, categoria, TIPO_NULL,0);
         KeyTabelaSimbolos k = v.getKey();
         if (procedimento != null) {
             if (procedimento.containsKey(k)) {
@@ -158,6 +167,24 @@ public class TabelaSimbolos {
 
     }
 
+    public Integer enderecoSimbolo(Token t) {
+        KeyTabelaSimbolos k = new KeyTabelaSimbolos(t.getLexema(), CATEGORIA_VAR);
+        ValueTabelaSimbolos v=null;
+        if (procedimento != null) {
+            v = procedimento.get(k);
+        }
+        if(v==null){
+            v = tabelaSimbolosGlobal.get(k);
+        }
+        if(v!=null){
+            return v.endereco;
+        }else return VARIAVEL_NAO_ENCONTRADA;
+    }
+
+    public int getNumVariaveis() {
+        return  enderecoAtual;
+    }
+
     private class ValueTabelaSimbolos {
 
         public String lexema;
@@ -165,12 +192,14 @@ public class TabelaSimbolos {
         public int tipo;
         public int valor;
         public boolean utilizada;
+        public int endereco;
 
-        public ValueTabelaSimbolos(Token t, int categoria, int tipo) {
+        public ValueTabelaSimbolos(Token t, int categoria, int tipo,int endereco) {
             lexema = t.getLexema();
             this.categoria = categoria;
             this.tipo = tipo;
             this.utilizada = false;
+            this.endereco = endereco;
         }
 
         public ValueTabelaSimbolos(String lexema, int categoria, int tipo) {

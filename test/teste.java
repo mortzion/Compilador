@@ -15,7 +15,10 @@ import jflex.AnalisadorLexicoLALG;
  */
 public class teste {
     public static void main(String[] args) throws Exception{
-        parser p = new parser(new AnalisadorLexicoLALG(new StringReader("program teste;.")));
-        p.parse();
+        System.out.println(+(+2));
+        System.out.println(-(-2));
+        System.out.println(+(-2));
+        System.out.println(-(+2));
+        
     }
 }
