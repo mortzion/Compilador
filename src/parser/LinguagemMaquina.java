@@ -6,6 +6,7 @@
 package parser;
 
 import java.util.ArrayList;
+import java_cup.runtime.Symbol;
 
 /**
  *
@@ -40,6 +41,51 @@ public class LinguagemMaquina {
     public static final String LEITURA = "LEIT";
     public static final String NADA = "NADA";
 
+    public static ArrayList<Instrucao> readFromString(String text) {
+        ArrayList<Instrucao> programa = new ArrayList<>();
+        String[] linhas = text.split("\n");
+
+        for (int i = 0; i < linhas.length; i++) {
+            String[] tokens = linhas[i].trim().split("(\\s+)|(\\t+)");
+            for (int j = 0; j < tokens.length; j++) {
+                tokens[j] = tokens[j].trim();
+            }
+
+            programa.add(decodeInstrucao(tokens));
+        }
+        return programa;
+    }
+
+    private static Instrucao decodeInstrucao(String[] tokens) {
+        Integer rotulo, operando;
+        String instrucao;
+        rotulo = operando = null;
+        instrucao = null;
+
+        switch (tokens.length) {
+            case 1:
+                instrucao = tokens[0];
+                break;
+            case 2:
+                if (tokens[0].matches("\\d+")) {
+                    rotulo = Integer.valueOf(tokens[0]);
+                    instrucao = tokens[1];
+                } else {
+                    instrucao = tokens[0];
+                    operando = Integer.valueOf(tokens[1]);
+                }
+                break;
+            case 3:
+                rotulo = Integer.valueOf(tokens[0]);
+                instrucao = tokens[1];
+                operando = Integer.valueOf(tokens[2]);
+                break;
+            default:
+                return null;
+        }
+        return new Instrucao(rotulo, instrucao, operando);
+    }
+
     private ArrayList<Instrucao> programa;
 
     public LinguagemMaquina() {
@@ -60,15 +106,15 @@ public class LinguagemMaquina {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(programa.size()*7);
-        for(Instrucao s : programa){
+        StringBuilder sb = new StringBuilder(programa.size() * 7);
+        for (Instrucao s : programa) {
             sb.append(s.toString());
             sb.append("\n");
         }
         return sb.toString();
     }
-    
-    public ArrayList<Instrucao> getInstrucoes(){
+
+    public ArrayList<Instrucao> getInstrucoes() {
         return programa;
     }
 
@@ -76,28 +122,4 @@ public class LinguagemMaquina {
         programa.clear();
     }
 
-    
-    public class Instrucao {
-
-        public  int rotulo;
-        public  String instrucao;
-        public  Integer operando;
-
-        public Instrucao(int rotulo, String instrucao, Integer operando) {
-            this.rotulo = rotulo;
-            this.instrucao = instrucao;
-            this.operando = operando;
-        }
-
-        @Override
-        public String toString() {
-            String print = rotulo + " " + instrucao;
-            if(operando != null){
-                print+=" " + operando;
-            }
-            return print;
-        }
-        
-        
-    }
 }

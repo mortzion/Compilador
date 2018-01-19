@@ -4,7 +4,7 @@ package interpretador;
 import java.util.ArrayList;
 import parser.LinguagemMaquina;
 import java.util.Stack;
-import parser.LinguagemMaquina.Instrucao;
+import parser.Instrucao;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -35,7 +35,7 @@ public class Interpretador {
             Instrucao inst = (c.get(i));
             boolean desvio = execute(inst);
             if (desvio) {
-                i = inst.operando;
+                i = getRealAddress(inst.operando);
             } else {
                 i++;
             }
@@ -43,6 +43,15 @@ public class Interpretador {
         }
     }
 
+    public int getRealAddress(int logicalAddress){
+        for(int i=0;i<c.size();i++){
+            if(c.get(i).rotulo!=null && c.get(i).rotulo == logicalAddress){
+                return i;
+            }
+        }
+        return c.size();
+    }
+    
     private boolean execute(Instrucao instrucao) {
         int aux;
         switch (instrucao.instrucao) {

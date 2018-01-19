@@ -36,7 +36,6 @@ public class Sintatico {
         while (!tokenIs(tokens) && !tokenIs(sym.EOF)) {
             tokenIgnorados.add(tokenAtual);
             consumir();
-
         }
     }
 
@@ -49,7 +48,7 @@ public class Sintatico {
 
     public boolean start() {
         program();
-        if (erros.isEmpty()) {
+        if (!erros.isEmpty()) {
             lMaquina.clear();
         }
         return tokenAtual.getTipo() == sym.EOF;
@@ -727,14 +726,18 @@ public class Sintatico {
                     break;
             }
 
-            if (tipo1 != tipo2 && tipo1 != tipoOp) {
-                if (tipo1 != TabelaSimbolos.TIPO_NULL && tipo2 != TabelaSimbolos.TIPO_NULL) {
-                    if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
-                        sintaxError("Operação OR apenas entre boleanos");
-                    } else {
-                        sintaxError("Operação númerica apenas entre números inteiros");
-                    }
-                    tipo1 = tipoOp;
+            boolean erro = false;
+            if (tipo1 != tipoOp && tipo1 != TabelaSimbolos.TIPO_NULL) {
+                erro = true;
+            }
+            if (tipo2 != tipoOp && tipo2 != TabelaSimbolos.TIPO_NULL) {
+                erro = true;
+            }
+            if (erro) {
+                if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
+                    sintaxError("Operação OR deve ser entre boleanos");
+                } else {
+                    sintaxError("Operação númerica deve ser entre números inteiros");
                 }
             }
         }
@@ -815,17 +818,31 @@ public class Sintatico {
                     break;
             }
 
-            if (tipo1 != tipo2 && tipo1 != tipoOp) {
-                if (tipo1 != TabelaSimbolos.TIPO_NULL && tipo2 != TabelaSimbolos.TIPO_NULL) {
-                    if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
-                        sintaxError("Operação AND deve ser entre boleanos");
-                    } else {
-                        sintaxError("Operação númerica deve ser entre números inteiros");
-                    }
+            boolean erro = false;
+            if (tipo1 != tipoOp && tipo1 != TabelaSimbolos.TIPO_NULL) {
+                erro = true;
+            }
+            if (tipo2 != tipoOp && tipo2 != TabelaSimbolos.TIPO_NULL) {
+                erro = true;
+            }
+            if (erro) {
+                if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
+                    sintaxError("Operação AND deve ser entre boleanos");
                 } else {
-                    tipo1 = tipoOp;
+                    sintaxError("Operação númerica deve ser entre números inteiros");
                 }
             }
+
+            //if (tipo1 != tipo2 && tipo1 != tipoOp) {
+//                if (tipo1 != TabelaSimbolos.TIPO_NULL && tipo2 != TabelaSimbolos.TIPO_NULL) {
+//                    if (tipoOp == TabelaSimbolos.TIPO_BOOLEAN) {
+//                        sintaxError("Operação AND deve ser entre boleanos");
+//                    } else {
+//                        sintaxError("Operação númerica deve ser entre números inteiros");
+//                    }
+//                } else {
+//                    tipo1 = tipoOp;
+//                }
         }
         return tipo1;
     }
@@ -849,8 +866,8 @@ public class Sintatico {
 //        }
 //
 //    }
-    //fator ::= variavel | NUM_INTEIRO | ABRE_P expressao FECHA_P | OP_NOT fator|
-    //RSRVDA_FALSE | RSRVDA_TRUE
+//fator ::= variavel | NUM_INTEIRO | ABRE_P expressao FECHA_P | OP_NOT fator|
+//RSRVDA_FALSE | RSRVDA_TRUE
     private int fator() {
         int tipo = TabelaSimbolos.TIPO_NULL;
         if (tokenIs(sym.IDENTIFICADOR)) {
@@ -884,7 +901,9 @@ public class Sintatico {
             tipo = fator();
             lMaquina.addInstrucao(LinguagemMaquina.NOT, null);
             if (tipo != TabelaSimbolos.TIPO_BOOLEAN) {
-                if(tipo!=TabelaSimbolos.TIPO_NULL)sintaxError("Operação NOT com um valor não boleano");
+                if (tipo != TabelaSimbolos.TIPO_NULL) {
+                    sintaxError("Operação NOT com um valor não boleano");
+                }
                 tipo = TabelaSimbolos.TIPO_BOOLEAN;
             }
         } else {
