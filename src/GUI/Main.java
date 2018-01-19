@@ -37,12 +37,15 @@ import javax.swing.text.StyledDocument;
 import jflex.CustomScanner;
 import jflex.Token;
 import parser.Sintatico;
+import interpretador.IO;
+import interpretador.Interpretador;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author YiazmaT
  */
-public class Main extends javax.swing.JFrame {
+public class Main extends javax.swing.JFrame implements IO {
 
     /**
      * Creates new form Main
@@ -61,7 +64,7 @@ public class Main extends javax.swing.JFrame {
         this.tokensIgnorados = null;
         tokensIgnorados = new ArrayList<>();
         errors = new ArrayList<>();
-        
+
     }
 
     /**
@@ -73,117 +76,224 @@ public class Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane2 = new javax.swing.JScrollPane();
-        tokenTable = new javax.swing.JTable();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         fonteBox = new javax.swing.JTextPane();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jPanel2 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable2 = new javax.swing.JTable();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTextPane1 = new javax.swing.JTextPane();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        tokenTable.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
-        tokenTable.setModel(new javax.swing.table.DefaultTableModel(
-        ){
-            public boolean isCellEditable(int row, int column){
-                return false;
+        jLabel2.setText("Fonte:");
+
+        fonteBox.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+        fonteBox.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                fonteBoxKeyReleased(evt);
             }
-        }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                fonteBoxKeyTyped(evt);
+            }
+        });
+        jScrollPane3.setViewportView(fonteBox);
 
-    );
-    tokenTable.addMouseListener(new java.awt.event.MouseAdapter() {
-        public void mouseClicked(java.awt.event.MouseEvent evt) {
-            tokenTableMouseClicked(evt);
-        }
-    });
-    jScrollPane2.setViewportView(tokenTable);
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
 
-    jLabel1.setText("Tokens:");
+            },
+            new String [] {
+                "Lexema", "Tipo", "Linha", "Coluna Inicial", "Coluna Final"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
 
-    jLabel2.setText("Fonte:");
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
-    fonteBox.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
-    fonteBox.addKeyListener(new java.awt.event.KeyAdapter() {
-        public void keyReleased(java.awt.event.KeyEvent evt) {
-            fonteBoxKeyReleased(evt);
-        }
-        public void keyTyped(java.awt.event.KeyEvent evt) {
-            fonteBoxKeyTyped(evt);
-        }
-    });
-    jScrollPane3.setViewportView(fonteBox);
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(jTable1);
 
-    jMenu1.setText("File");
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+        );
 
-    jMenuItem2.setText("Carregar Fonte");
-    jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jMenuItem2ActionPerformed(evt);
-        }
-    });
-    jMenu1.add(jMenuItem2);
+        jTabbedPane1.addTab("Tokens", jPanel1);
 
-    jMenuBar1.add(jMenu1);
+        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
 
-    jMenu2.setText("Analisador");
+            },
+            new String [] {
+                "Erro", "Linha", "Coluna"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
 
-    jMenuItem1.setText("Léxico");
-    jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jMenuItem1ActionPerformed(evt);
-        }
-    });
-    jMenu2.add(jMenuItem1);
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
-    jMenuItem3.setText("Sintatico");
-    jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jMenuItem3ActionPerformed(evt);
-        }
-    });
-    jMenu2.add(jMenuItem3);
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(jTable2);
 
-    jMenuBar1.add(jMenu2);
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+        );
 
-    setJMenuBar(jMenuBar1);
+        jTabbedPane1.addTab("Erros", jPanel2);
 
-    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-    getContentPane().setLayout(layout);
-    layout.setHorizontalGroup(
-        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addContainerGap()
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                .addComponent(jScrollPane3)
-                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jLabel1)
-                        .addComponent(jLabel2))
-                    .addGap(0, 816, Short.MAX_VALUE))
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING))
-            .addContainerGap())
-    );
-    layout.setVerticalGroup(
-        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(layout.createSequentialGroup()
-            .addGap(10, 10, 10)
-            .addComponent(jLabel2)
-            .addGap(1, 1, 1)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(jLabel1)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
-            .addContainerGap())
-    );
+        jTextPane1.setEditable(false);
+        jScrollPane4.setViewportView(jTextPane1);
 
-    pack();
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Código de Máquina", jPanel4);
+
+        jTextArea1.setEditable(false);
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane5.setViewportView(jTextArea1);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 849, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Saida", jPanel3);
+
+        jMenu1.setText("File");
+
+        jMenuItem2.setText("Carregar Fonte");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem2);
+
+        jMenuBar1.add(jMenu1);
+
+        jMenu2.setText("Analisador");
+
+        jMenuItem1.setText("Léxico");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem1);
+
+        jMenuItem3.setText("Sintatico");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem3);
+
+        jMenuItem4.setText("Compilar e Rodar");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem4);
+
+        jMenuBar1.add(jMenu2);
+
+        setJMenuBar(jMenuBar1);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jTabbedPane1))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addComponent(jLabel2)
+                .addGap(1, 1, 1)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jTabbedPane1)
+                .addContainerGap())
+        );
+
+        pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -209,7 +319,6 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        this.reloadTable(0);
         this.fillTokenTable(this.getAllTokens());
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
@@ -228,90 +337,54 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_fonteBoxKeyReleased
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
-
         tokens = new ArrayList<>();
         errors = new ArrayList<>();
-        reloadTable(1);
         Sintatico s = new Sintatico(new CustomScanner((new StringReader(fonteBox.getText())), tokens), errors);
         try {
             System.out.println(s.start());
         } catch (Exception ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        reloadTable(1);
+        fillTokenTable(tokens);
         fillSintaxErrorTable(errors);
+        jTextPane1.setText(s.getCodigoMaquina().toString());
         cdf.tokensIgnorados = s.getTokenIgnorados();
         cdf.updateTextStyles();
+        if (errors.isEmpty()) {
+            jTabbedPane1.setSelectedIndex(2);
+            jTextPane1.setText(s.getCodigoMaquina().toString());
+        }else{
+            jTabbedPane1.setSelectedIndex(1);
+        }
         repaint();
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
-    private void tokenTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tokenTableMouseClicked
-        if (evt.getClickCount() > 1) {
-            DefaultTableModel dtm = (DefaultTableModel) tokenTable.getModel();
-            int i = tokenTable.getSelectedRow();
-            if (i < 0) {
-                return;
-            }
-
-            if (dtm.getColumnCount() == 3) {
-                fonteBox.setCaretPosition(errors.get(i).getOffset()-errors.get(i).getLinha()+1);
-            } else {
-                Token t = tokens.get(i);
-                int offset;
-                if(t.getOffset()-t.getLinha()+1 > fonteBox.getDocument().getLength()){
-                    offset = fonteBox.getDocument().getLength();
-                }else{
-                    offset = t.getOffset()-t.getLinha()+1;
-                }
-                fonteBox.setCaretPosition(tokens.get(i).getOffset());
-            }
-            fonteBox.requestFocus();
-            repaint();
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        tokens = new ArrayList<>();
+        errors = new ArrayList<>();
+        Sintatico s = new Sintatico(new CustomScanner((new StringReader(fonteBox.getText())), tokens), errors);
+        try {
+            System.out.println(s.start());
+        } catch (Exception ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_tokenTableMouseClicked
-
-    public void reloadTable(int type) {
-        switch (type) {
-            case 0: {
-                DefaultTableModel model = new DefaultTableModel(0, 5) {
-                    @Override
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }
-
-                };
-                String[] header = new String[5];
-                header[0] = "Lexema";
-                header[1] = "Tipo";
-                header[2] = "Linha";
-                header[3] = "Coluna Inicial";
-                header[4] = "Coluna Final";
-                model.setColumnIdentifiers(header);
-                tokenTable.setModel(model);
-                tokenTable.revalidate();
-                tokenTable.repaint();
-                break;
-            }
-            case 1: {
-                DefaultTableModel model = new DefaultTableModel(0, 3){
-                    @Override
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }
-                    
-                };
-                String[] header = new String[3];
-                header[0] = "Erro";
-                header[1] = "Linha";
-                header[2] = "Coluna";
-                model.setColumnIdentifiers(header);
-                tokenTable.setModel(model);
-                tokenTable.revalidate();
-                tokenTable.repaint();
-                break;
-            }
+        fillTokenTable(tokens);
+        fillSintaxErrorTable(errors);
+        jTextPane1.setText(s.getCodigoMaquina().toString());
+        cdf.tokensIgnorados = s.getTokenIgnorados();
+        cdf.updateTextStyles();
+        if (errors.isEmpty()) {
+            jTabbedPane1.setSelectedIndex(3);
+            jTextPane1.setText(s.getCodigoMaquina().toString());
+            jTextArea1.setText("");
+            Interpretador interpretador = new Interpretador(s.getCodigoMaquina().getInstrucoes(), this);
+            interpretador.run();
+        }else{
+            jTabbedPane1.setSelectedIndex(1);
         }
-    }
+        repaint();
+        
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -349,7 +422,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     public void fillSintaxErrorTable(ArrayList<SintaxError> errors) {
-        DefaultTableModel dtm = (DefaultTableModel) tokenTable.getModel();
+        DefaultTableModel dtm = (DefaultTableModel) jTable2.getModel();
         dtm.getDataVector().removeAllElements();
         dtm.fireTableDataChanged();
 
@@ -360,10 +433,12 @@ public class Main extends javax.swing.JFrame {
             linha[0] = e.getErro();
             dtm.addRow(linha);
         }
+        jTable2.revalidate();
+        jTable2.repaint();
     }
 
     public void fillTokenTable(ArrayList<Token> tokens) {
-        DefaultTableModel dtm = (DefaultTableModel) tokenTable.getModel();
+        DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
         dtm.getDataVector().removeAllElements();
         dtm.fireTableDataChanged();
 
@@ -376,6 +451,8 @@ public class Main extends javax.swing.JFrame {
             linha[4] = String.valueOf(t.getColunaFinal());
             dtm.addRow(linha);
         }
+        jTable1.revalidate();
+        jTable1.repaint();
     }
 
     public ArrayList<Token> getAllTokens() {
@@ -400,7 +477,6 @@ public class Main extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextPane fonteBox;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -408,9 +484,21 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTable tokenTable;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTable jTable2;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
 
     private class CustomDocumentFilter extends DocumentFilter {
@@ -464,7 +552,7 @@ public class Main extends javax.swing.JFrame {
             AnalisadorLexicoLALG a = new AnalisadorLexicoLALG(new StringReader(fonteBox.getText()));
             a.tokensComentarios(true);
             Token t = null;
-            ArrayList<Token> copiaTokens = (tokensIgnorados != null ?(ArrayList<Token>)tokensIgnorados.clone() : null);
+            ArrayList<Token> copiaTokens = (tokensIgnorados != null ? (ArrayList<Token>) tokensIgnorados.clone() : null);
             try {
                 while (true) {
                     Symbol s = a.next_token();
@@ -496,6 +584,24 @@ public class Main extends javax.swing.JFrame {
             }
             tokensIgnorados = copiaTokens;
         }
+    }
+
+    @Override
+    public int readInt() {
+        String input = JOptionPane.showInputDialog(this, "Entre com um número inteiro", "0");
+        try {
+            int i = Integer.valueOf(input);
+            jTextArea1.append("Input: " + i + "\n");
+            return i;
+        } catch (NumberFormatException n) {
+            JOptionPane.showMessageDialog(this, "Formato do número está incorreto.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return readInt();
+        }
+    }
+
+    @Override
+    public void printInt(int i) {
+        jTextArea1.append("Output: " + i + "\n");
     }
 
 }//end file

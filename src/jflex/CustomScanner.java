@@ -38,12 +38,15 @@ public class CustomScanner extends AnalisadorLexicoLALG{
     
     public Token nextToken(){
         try {
+            Token t;
             if(lookahead.isEmpty()){
                 super.next_token();
-                return super.yylex();
+                t = super.yylex();
             }else{
-                return lookahead.remove(0);
+                t = lookahead.remove(0);
             }
+            if(t.getTipo()!= 0 && tabelaTokens!=null)tabelaTokens.add(t);
+            return t;
         } catch (IOException ex) {
             return null;
         }

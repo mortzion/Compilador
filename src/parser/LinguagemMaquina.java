@@ -68,13 +68,20 @@ public class LinguagemMaquina {
         return sb.toString();
     }
     
+    public ArrayList<Instrucao> getInstrucoes(){
+        return programa;
+    }
+
+    public void clear() {
+        programa.clear();
+    }
+
     
+    public class Instrucao {
 
-    private class Instrucao {
-
-        private int rotulo;
-        private String instrucao;
-        private Integer operando;
+        public  int rotulo;
+        public  String instrucao;
+        public  Integer operando;
 
         public Instrucao(int rotulo, String instrucao, Integer operando) {
             this.rotulo = rotulo;
